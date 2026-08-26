@@ -1,5 +1,6 @@
 plugins {
-    id("java")
+    id("application")
+    id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
 group = "portsim"
@@ -19,4 +20,13 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+javafx {
+    version = "25"
+    modules = listOf("javafx.controls", "javafx.fxml")
+}
+
+application {
+    mainClass = "portsim.Main"
 }
