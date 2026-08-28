@@ -1,5 +1,6 @@
 package portsim.model.ship.state.impl;
 
+import org.jetbrains.annotations.NotNull;
 import portsim.model.ship.Cruiser;
 import portsim.model.ship.state.Customs;
 
@@ -8,8 +9,8 @@ import java.nio.file.Path;
 public final class CustomsCruiser extends Cruiser implements Customs {
     private boolean sirenOn;
 
-    public CustomsCruiser(String name, String engineNumber, String regNumber,
-                          int imo, int speed, Path photoPath, int numPassengers) {
+    public CustomsCruiser(@NotNull String name, @NotNull String engineNumber, @NotNull String regNumber,
+                          int imo, int speed, @NotNull Path photoPath, int numPassengers) {
         super(name, engineNumber, regNumber, imo, speed, photoPath, numPassengers);
     }
 

@@ -1,5 +1,7 @@
 package portsim.model.ship;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.nio.file.Path;
 
 public abstract class Ship {
@@ -8,7 +10,8 @@ public abstract class Ship {
     protected final int speed;
     protected final Path photoPath;
 
-    public Ship(String name, String engineNumber, String regNumber, int imo, int speed, Path photoPath) {
+    public Ship(@NotNull String name, @NotNull String engineNumber, @NotNull String regNumber,
+                int imo, int speed, @NotNull Path photoPath) {
         this.name = name;
         this.engineNumber = engineNumber;
         this.regNumber = regNumber;

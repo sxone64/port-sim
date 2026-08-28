@@ -1,5 +1,6 @@
 package portsim.model.ship.state.impl;
 
+import org.jetbrains.annotations.NotNull;
 import portsim.model.ship.ContainerShip;
 import portsim.model.ship.state.CoastGuard;
 
@@ -9,14 +10,14 @@ public final class GuardContainerShip extends ContainerShip implements CoastGuar
     private final Path pursuitPath;
     private boolean sirenOn;
 
-    public GuardContainerShip(String name, String engineNumber, String regNumber,
-                              int imo, int speed, Path photoPath, int capacity, Path pursuitPath) {
+    public GuardContainerShip(@NotNull String name, @NotNull String engineNumber, @NotNull String regNumber,
+                              int imo, int speed, @NotNull Path photoPath, int capacity, @NotNull Path pursuitPath) {
         super(name, engineNumber, regNumber, imo, speed, photoPath, capacity);
         this.pursuitPath = pursuitPath;
     }
 
     @Override
-    public Path getPursuitPath() {
+    public @NotNull Path getPursuitPath() {
         return pursuitPath;
     }
 

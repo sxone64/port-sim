@@ -1,13 +1,15 @@
 package portsim.model.ship.state;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.nio.file.Path;
 
 import static portsim.model.ship.state.StateShip.Priority.MEDIUM;
 
 public interface CoastGuard extends StateShip {
-    Path getPursuitPath();
+    @NotNull Path getPursuitPath();
 
-    default Priority getPriority() {
+    default @NotNull Priority getPriority() {
         return MEDIUM;
     }
 }
