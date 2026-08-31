@@ -1,7 +1,9 @@
 package portsim.model;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 import portsim.model.ship.Ship;
+import portsim.model.ship.state.StateShip;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -30,16 +32,40 @@ public final class Terminal implements Serializable {
     private final List<Position> dockPositions;
     private final Map<Ship, Position> shipPositions;
 
+    private int freeDocks;
+
     public Terminal(int idTerminal) {
         this.idTerminal = idTerminal;
         grid = initGrid();
 
         dockPositions = findDockPositions();
         shipPositions = new HashMap<>();
+
+        freeDocks = dockPositions.size();
     }
 
     public int getIdTerminal() {
         return idTerminal;
+    }
+
+    public @NotNull @Unmodifiable List<Ship> getShips() {
+        return List.copyOf(shipPositions.keySet());
+    }
+
+    public int getStateShipCount() {
+        var ships = shipPositions.keySet();
+
+        return (int) ships.stream()
+                .filter(ship -> ship instanceof StateShip)
+                .count();
+    }
+
+    public int getNumDocks() {
+        return dockPositions.size();
+    }
+
+    public int getFreeDocks() {
+        return freeDocks;
     }
 
     /*
