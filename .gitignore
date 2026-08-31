@@ -45,3 +45,4 @@ bin/
 
 /error.log
 /warning.log
+/port.ser
