@@ -13,7 +13,8 @@
 <?import javafx.scene.text.Font?>
 
 <BorderPane xmlns="http://javafx.com/javafx/25"
-            xmlns:fx="http://javafx.com/fxml/1">
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="portsim.ui.controller.AdminController">
     <top>
         <HBox alignment="CENTER_LEFT"
               minHeight="-Infinity"
@@ -92,7 +93,7 @@
                 </VBox.margin>
                 <Label fx:id="selectedTerminalLabel" text="&lt;Select a terminal&gt;" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Button fx:id="addShipBtn" text="Add ship" />
+                <Button fx:id="addShipBtn" onAction="#onAddShipAction" text="Add ship" />
             </HBox>
             <TableView fx:id="tableView" minHeight="-Infinity" minWidth="-Infinity" VBox.vgrow="ALWAYS">
                 <columns>
@@ -117,7 +118,7 @@
         </VBox>
     </center>
     <bottom>
-        <Button text="Start simulation" BorderPane.alignment="CENTER_RIGHT">
+        <Button onAction="#onStartSimulationAction" text="Start simulation" BorderPane.alignment="CENTER_RIGHT">
             <BorderPane.margin>
                 <Insets bottom="10.0" right="10.0" />
             </BorderPane.margin>
