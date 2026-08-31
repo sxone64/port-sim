@@ -1,6 +1,8 @@
 package portsim.io;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -15,6 +17,11 @@ public final class AppLogger {
     public static AppLogger getInstance() {
         return INSTANCE;
     }
+
+    private BiConsumer<String, Throwable> onSevereError = (_, _) -> {};
+
+    // Introduced to avoid multiple threads executing onSevereError
+    private final AtomicBoolean shutdownStarted = new AtomicBoolean(false);
 
     private AppLogger() {
         try {
@@ -43,8 +50,15 @@ public final class AppLogger {
         }
     }
 
+    public void setOnSevereError(BiConsumer<String, Throwable> onSevereError) {
+        this.onSevereError = onSevereError;
+    }
+
     public void severe(String message, Throwable t) {
         LOGGER.log(SEVERE, message, t);
+
+        if (shutdownStarted.compareAndSet(false, true))
+            onSevereError.accept(message, t);
     }
 
     public void warning(String message, Throwable t) {
