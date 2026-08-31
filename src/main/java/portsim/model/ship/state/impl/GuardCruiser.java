@@ -4,9 +4,13 @@ import org.jetbrains.annotations.NotNull;
 import portsim.model.ship.Cruiser;
 import portsim.model.ship.state.CoastGuard;
 
+import java.io.Serial;
 import java.nio.file.Path;
 
 public final class GuardCruiser extends Cruiser implements CoastGuard {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private final String pursuitPath;
     private boolean sirenOn;
 

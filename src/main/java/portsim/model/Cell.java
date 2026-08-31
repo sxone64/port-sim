@@ -4,7 +4,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import portsim.model.ship.Ship;
 
-public final class Cell {
+import java.io.Serial;
+import java.io.Serializable;
+
+public final class Cell implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private final Type type;
     private Ship occupant;
 

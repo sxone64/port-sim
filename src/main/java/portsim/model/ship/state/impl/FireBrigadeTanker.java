@@ -4,9 +4,13 @@ import org.jetbrains.annotations.NotNull;
 import portsim.model.ship.Tanker;
 import portsim.model.ship.state.FireBrigade;
 
+import java.io.Serial;
 import java.nio.file.Path;
 
 public final class FireBrigadeTanker extends Tanker implements FireBrigade {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private boolean sirenOn;
 
     public FireBrigadeTanker(@NotNull String name, @NotNull String engineNumber, @NotNull String regNumber,

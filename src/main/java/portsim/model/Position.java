@@ -1,3 +1,9 @@
 package portsim.model;
 
-public record Position(int row, int column) {}
+import java.io.Serial;
+import java.io.Serializable;
+
+public record Position(int row, int column) implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+}

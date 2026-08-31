@@ -4,9 +4,13 @@ import org.jetbrains.annotations.NotNull;
 import portsim.model.ship.Cruiser;
 import portsim.model.ship.state.Customs;
 
+import java.io.Serial;
 import java.nio.file.Path;
 
 public final class CustomsCruiser extends Cruiser implements Customs {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private boolean sirenOn;
 
     public CustomsCruiser(@NotNull String name, @NotNull String engineNumber, @NotNull String regNumber,

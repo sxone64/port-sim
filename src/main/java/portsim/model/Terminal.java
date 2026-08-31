@@ -3,6 +3,8 @@ package portsim.model;
 import org.jetbrains.annotations.NotNull;
 import portsim.model.ship.Ship;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +12,10 @@ import java.util.Map;
 
 import static portsim.model.Cell.Type.*;
 
-public final class Terminal {
+public final class Terminal implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private static final List<Cell.Type> CHANNEL_MASK = List.of(CHANNEL_LEFT, CHANNEL_RIGHT);
     private static final List<Cell.Type> TRANSIT_MASK = List.of(TRANSIT_DOWN, TRANSIT_UP);
 

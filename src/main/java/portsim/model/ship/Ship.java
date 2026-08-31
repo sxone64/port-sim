@@ -2,9 +2,14 @@ package portsim.model.ship;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.nio.file.Path;
 
-public abstract class Ship {
+public abstract class Ship implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     protected final String name, engineNumber, regNumber;
     protected final int imo; // Uniquely identifies the ship
     protected final int speed;
