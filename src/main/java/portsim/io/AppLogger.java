@@ -28,6 +28,7 @@ public final class AppLogger {
             var errorHandler = new FileHandler("error.log", true);
             errorHandler.setFormatter(new SimpleFormatter());
             errorHandler.setLevel(ALL);
+            errorHandler.setFilter(record -> !record.getLevel().equals(WARNING));
             LOGGER.addHandler(errorHandler);
 
             var warningHandler = new FileHandler("warning.log", true);
