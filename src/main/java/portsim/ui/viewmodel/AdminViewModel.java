@@ -1,9 +1,12 @@
 package portsim.ui.viewmodel;
 
 import javafx.beans.property.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 import portsim.model.Terminal;
+import portsim.model.ship.Ship;
 import portsim.service.PortService;
 
 import java.util.List;
@@ -19,7 +22,11 @@ public final class AdminViewModel {
 
     private final BooleanProperty isAddShipBtnDisabledProperty = new SimpleBooleanProperty(true);
 
+    private final ObservableList<Ship> terminalShips = FXCollections.observableArrayList();
+
     private final PortService portService = PortService.getInstance();
+
+    private Integer idTerminal;
 
     public ReadOnlyIntegerProperty totalShipsProperty() {
         return totalShipsProperty;
@@ -45,6 +52,10 @@ public final class AdminViewModel {
         return isAddShipBtnDisabledProperty;
     }
 
+    public ObservableList<Ship> getTerminalShips() {
+        return terminalShips;
+    }
+
     public @NotNull @Unmodifiable List<Terminal> getTerminals() {
         return portService.getTerminals();
     }
@@ -55,6 +66,22 @@ public final class AdminViewModel {
         totalDocksProperty.set(portService.getTotalDocks());
         totalStateShipsProperty.set(portService.getTotalStateShips());
 
-        // TODO: Refresh terminal's ship list
+        refreshTerminalShips();
+    }
+
+    public void setTerminal(int idTerminal) {
+        this.idTerminal = idTerminal;
+
+        selectedTerminalProperty.set("Terminal %d".formatted(idTerminal));
+        isAddShipBtnDisabledProperty.set(false);
+
+        refreshTerminalShips();
+    }
+
+    private void refreshTerminalShips() {
+        if (idTerminal != null) {
+            var ships = portService.getShips(idTerminal);
+            terminalShips.setAll(ships);
+        }
     }
 }

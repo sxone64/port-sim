@@ -1,14 +1,15 @@
 package portsim.ui.controller;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.jetbrains.annotations.NotNull;
 import portsim.model.ship.Ship;
 import portsim.ui.viewmodel.AdminViewModel;
+
+import static javafx.geometry.Pos.CENTER;
 
 public final class AdminController {
     @FXML private VBox terminalsVBox;
@@ -19,7 +20,6 @@ public final class AdminController {
     @FXML private Label selectedTerminalLabel;
     @FXML private Button addShipBtn;
 
-    // TODO: Wire terminal's ship list
     @FXML private TableView<Ship> tableView;
     @FXML private TableColumn<Ship, String> nameColumn;
     @FXML private TableColumn<Ship, String> imoColumn;
@@ -39,6 +39,7 @@ public final class AdminController {
         );
 
         setupBindings();
+        setupTable();
     }
 
     private @NotNull Button createTerminalButton(int idTerminal) {
@@ -51,7 +52,7 @@ public final class AdminController {
     }
 
     private void onTerminalSelected(int idTerminal) {
-        // TODO
+        viewModel.setTerminal(idTerminal);
     }
 
     private void setupBindings() {
@@ -78,6 +79,52 @@ public final class AdminController {
         addShipBtn.disableProperty().bind(
                 viewModel.isAddShipBtnDisabledProperty()
         );
+    }
+
+    private void setupTable() {
+        tableView.setItems(viewModel.getTerminalShips());
+
+        nameColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(cell.getValue().getName())
+        );
+
+        imoColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(String.valueOf(cell.getValue().getImo()))
+        );
+
+        typeColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(cell.getValue().getClass().getSimpleName())
+        );
+
+        regNumberColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(cell.getValue().getRegNumber())
+        );
+
+        actionsColumn.setCellFactory(_ -> new TableCell<>() {
+            private final Button updateButton = new Button("Update");
+            private final Button deleteButton = new Button("Delete");
+            private final HBox container = new HBox(5, updateButton, deleteButton);
+
+            {
+                container.setAlignment(CENTER);
+
+                updateButton.setOnAction(_ -> {
+                    // TODO
+                });
+
+                deleteButton.setOnAction(_ -> {
+                    // TODO
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty) setGraphic(null);
+                else setGraphic(container);
+            }
+        });
     }
 
     @FXML

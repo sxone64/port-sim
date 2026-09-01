@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import portsim.io.PortPersistence;
 import portsim.model.Port;
 import portsim.model.Terminal;
+import portsim.model.ship.Ship;
 
 import java.util.List;
 import java.util.function.ToIntFunction;
@@ -20,6 +21,11 @@ public final class PortService {
 
     private PortService() {
         port = PortPersistence.getInstance().loadOrCreate();
+    }
+
+    public @NotNull @Unmodifiable List<Ship> getShips(int idTerminal) {
+        var terminal = port.getTerminal(idTerminal);
+        return terminal.map(value -> List.copyOf(value.getShips())).orElseGet(List::of);
     }
 
     public int getTotalShips() {
