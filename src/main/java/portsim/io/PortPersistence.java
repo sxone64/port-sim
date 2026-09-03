@@ -1,6 +1,5 @@
 package portsim.io;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import portsim.model.Port;
 import portsim.model.Terminal;
@@ -41,7 +40,6 @@ public final class PortPersistence {
         }
     }
 
-    @Contract(" -> new")
     private @NotNull Port createFresh() {
         var properties = AppProperties.getInstance();
         var numTerminals = properties.getNumTerminals();
