@@ -119,5 +119,7 @@ public final class ShipBuilder {
         return this;
     }
 
-    // TODO: Implement build method
+    public Ship build() {
+        return ShipFactory.getInstance().create(type, this);
+    }
 }
