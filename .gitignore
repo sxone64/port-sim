@@ -44,5 +44,7 @@ bin/
 .DS_Store
 
 /error.log
+/error.log.lck
 /warning.log
+/warning.log.lck
 /port.ser
