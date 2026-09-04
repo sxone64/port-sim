@@ -9,7 +9,7 @@ import portsim.model.ship.state.impl.*;
 import java.util.Map;
 import java.util.function.Function;
 
-public class ShipFactory {
+public final class ShipFactory {
     private static final ShipFactory INSTANCE = new ShipFactory();
 
     private static final Map<Class<? extends Ship>, Function<ShipBuilder, Ship>> FACTORIES = Map.of(
