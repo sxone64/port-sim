@@ -11,18 +11,11 @@ public final class GuardTanker extends Tanker implements CoastGuard {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private final String pursuitPath;
     private boolean sirenOn;
 
     public GuardTanker(@NotNull String name, @NotNull String engineNumber, @NotNull String regNumber,
-                       int imo, int speed, @NotNull Path photoPath, double volume, @NotNull Path pursuitPath) {
+                       int imo, int speed, @NotNull Path photoPath, double volume) {
         super(name, engineNumber, regNumber, imo, speed, photoPath, volume);
-        this.pursuitPath = pursuitPath.toString();
-    }
-
-    @Override
-    public @NotNull Path getPursuitPath() {
-        return Path.of(pursuitPath);
     }
 
     @Override

@@ -14,7 +14,6 @@ public final class ShipBuilder {
     private final Class<? extends Ship> type;
 
     private final int speed; // Random value between MIN_SPEED and MAX_SPEED
-    private final Path pursuitPath; // Single file for all CoastGuard implementations
 
     private String name, engineNumber, regNumber;
     private int imo;
@@ -35,8 +34,6 @@ public final class ShipBuilder {
 
         var random = new Random();
         speed = random.nextInt(MIN_SPEED, MAX_SPEED + 1);
-
-        pursuitPath = Path.of("pursuits.txt");
     }
 
     String getName() {
@@ -73,10 +70,6 @@ public final class ShipBuilder {
 
     int getCapacity() {
         return capacity;
-    }
-
-    Path getPursuitPath() {
-        return pursuitPath;
     }
 
     public ShipBuilder name(@NotNull String name) throws FieldValidator.ValidationException {

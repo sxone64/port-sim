@@ -65,8 +65,7 @@ public final class ShipFactory {
                     builder.getImo(),
                     builder.getSpeed(),
                     builder.getPhotoPath(),
-                    builder.getNumPassengers(),
-                    builder.getPursuitPath()
+                    builder.getNumPassengers()
             ),
 
             CustomsTanker.class,
@@ -99,8 +98,7 @@ public final class ShipFactory {
                     builder.getImo(),
                     builder.getSpeed(),
                     builder.getPhotoPath(),
-                    builder.getVolume(),
-                    builder.getPursuitPath()
+                    builder.getVolume()
             ),
 
             GuardContainerShip.class,
@@ -111,8 +109,7 @@ public final class ShipFactory {
                     builder.getImo(),
                     builder.getSpeed(),
                     builder.getPhotoPath(),
-                    builder.getCapacity(),
-                    builder.getPursuitPath()
+                    builder.getCapacity()
             )
     );
 

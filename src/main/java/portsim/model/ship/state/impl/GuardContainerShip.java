@@ -11,18 +11,11 @@ public final class GuardContainerShip extends ContainerShip implements CoastGuar
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private final String pursuitPath;
     private boolean sirenOn;
 
     public GuardContainerShip(@NotNull String name, @NotNull String engineNumber, @NotNull String regNumber,
-                              int imo, int speed, @NotNull Path photoPath, int capacity, @NotNull Path pursuitPath) {
+                              int imo, int speed, @NotNull Path photoPath, int capacity) {
         super(name, engineNumber, regNumber, imo, speed, photoPath, capacity);
-        this.pursuitPath = pursuitPath.toString();
-    }
-
-    @Override
-    public @NotNull Path getPursuitPath() {
-        return Path.of(pursuitPath);
     }
 
     @Override
