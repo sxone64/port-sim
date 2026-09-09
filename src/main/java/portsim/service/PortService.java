@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import portsim.io.PortPersistence;
 import portsim.model.Port;
 import portsim.model.Terminal;
+import portsim.model.TerminalNotFoundException;
 import portsim.model.ship.Ship;
 
 import java.util.List;
@@ -19,8 +20,10 @@ public final class PortService {
 
     private final Port port;
 
+    private final PortPersistence portPersistence = PortPersistence.getInstance();
+
     private PortService() {
-        port = PortPersistence.getInstance().loadOrCreate();
+        port = portPersistence.loadOrCreate();
     }
 
     public @NotNull @Unmodifiable List<Ship> getShips(int idTerminal) {
@@ -46,6 +49,14 @@ public final class PortService {
 
     public @NotNull @Unmodifiable List<Terminal> getTerminals() {
         return List.copyOf(port.terminals());
+    }
+
+    public void addShip(int idTerminal, @NotNull Ship ship) {
+        var terminal = port.getTerminal(idTerminal)
+                .orElseThrow(() -> new TerminalNotFoundException(idTerminal));
+
+        terminal.addShip(ship);
+        portPersistence.savePort(port);
     }
 
     private int getTotalCount(ToIntFunction<Terminal> mapper) {
