@@ -92,7 +92,7 @@ public final class PursuitFile {
         WatchService watchService;
         try {
             watchService = FileSystems.getDefault().newWatchService();
-            parent.register(watchService, ENTRY_MODIFY, ENTRY_DELETE);
+            parent.register(watchService, ENTRY_MODIFY);
         } catch (IOException e) {
             logger.warning("Failed to start the pursuit file watcher", e);
             return;
