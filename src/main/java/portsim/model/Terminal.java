@@ -7,10 +7,7 @@ import portsim.model.ship.state.StateShip;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static portsim.model.Cell.Type.*;
 
@@ -66,6 +63,23 @@ public final class Terminal implements Serializable {
 
     public int getFreeDocks() {
         return freeDocks;
+    }
+
+    public @NotNull Optional<Position> getShipPosition(@NotNull Ship ship) {
+        return Optional.ofNullable(shipPositions.get(ship));
+    }
+
+    /*
+        Adds the ship to the terminal and reserves a dock spot for it.
+        Added ship doesn't have a position. In order for the ship to have a position it
+        first needs to be added to the terminal
+     */
+    public void addShip(@NotNull Ship ship) {
+        if (freeDocks > 0) {
+            shipPositions.put(ship, null);
+            --freeDocks;
+        }
+        else throw new TerminalFullException(idTerminal);
     }
 
     /*
