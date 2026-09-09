@@ -5,23 +5,17 @@ import portsim.model.ship.Ship;
 import portsim.util.FieldValidator;
 
 import java.nio.file.Path;
-import java.util.Random;
 
 public final class ShipBuilder {
-    private static final int MIN_SPEED = 30;
-    private static final int MAX_SPEED = 120;
-
     private final Class<? extends Ship> type;
 
-    private final int speed; // Random value between MIN_SPEED and MAX_SPEED
-
     private String name, engineNumber, regNumber;
-    private int imo;
+    private Integer imo, speed;
     private Path photoPath;
 
-    private int numPassengers;
-    private double volume;
-    private int capacity;
+    private Integer numPassengers;
+    private Double volume;
+    private Integer capacity;
 
     private final FieldValidator validator = FieldValidator.getInstance();
 
@@ -31,9 +25,6 @@ public final class ShipBuilder {
 
     private ShipBuilder(Class<? extends Ship> type) {
         this.type = type;
-
-        var random = new Random();
-        speed = random.nextInt(MIN_SPEED, MAX_SPEED + 1);
     }
 
     String getName() {
@@ -92,8 +83,13 @@ public final class ShipBuilder {
         return this;
     }
 
+    public ShipBuilder speed(int speed) throws FieldValidator.ValidationException {
+        // TODO
+        return this;
+    }
+
     public ShipBuilder photoPath(@NotNull Path photoPath) throws FieldValidator.ValidationException {
-        this.photoPath = validator.requireNonNull("Photo", photoPath);
+        // TODO
         return this;
     }
 
