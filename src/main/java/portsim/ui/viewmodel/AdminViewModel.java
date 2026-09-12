@@ -73,9 +73,17 @@ public final class AdminViewModel {
         this.idTerminal = idTerminal;
 
         selectedTerminalProperty.set("Terminal %d".formatted(idTerminal));
-        isAddShipBtnDisabledProperty.set(false);
+        checkFreeDocks();
 
         refreshTerminalShips();
+    }
+
+    // If there's no free dock at the current terminal, disable the add ship button
+    private void checkFreeDocks() {
+        if (idTerminal != null) {
+            var freeDocks = portService.getFreeDocks(idTerminal);
+            isAddShipBtnDisabledProperty.set(freeDocks <= 0);
+        }
     }
 
     private void refreshTerminalShips() {

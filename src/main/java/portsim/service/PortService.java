@@ -59,6 +59,13 @@ public final class PortService {
         portPersistence.savePort(port);
     }
 
+    public int getFreeDocks(int idTerminal) {
+        var terminal = port.getTerminal(idTerminal)
+                .orElseThrow(() -> new TerminalNotFoundException(idTerminal));
+
+        return terminal.getFreeDocks();
+    }
+
     private int getTotalCount(ToIntFunction<Terminal> mapper) {
         return port.terminals().stream()
                 .mapToInt(mapper)
