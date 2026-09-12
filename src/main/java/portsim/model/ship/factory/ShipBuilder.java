@@ -2,6 +2,7 @@ package portsim.model.ship.factory;
 
 import org.jetbrains.annotations.NotNull;
 import portsim.model.ship.Ship;
+import portsim.util.FieldValidationException;
 import portsim.util.FieldValidator;
 
 import java.nio.file.Path;
@@ -63,47 +64,47 @@ public final class ShipBuilder {
         return capacity;
     }
 
-    public ShipBuilder name(@NotNull String name) throws FieldValidator.ValidationException {
+    public ShipBuilder name(@NotNull String name) throws FieldValidationException {
         this.name = validator.requireNonBlank("Name", name);
         return this;
     }
 
-    public ShipBuilder engineNumber(@NotNull String engineNumber) throws FieldValidator.ValidationException {
+    public ShipBuilder engineNumber(@NotNull String engineNumber) throws FieldValidationException {
         this.engineNumber = validator.requireNonBlank("Engine number", engineNumber);
         return this;
     }
 
-    public ShipBuilder regNumber(@NotNull String regNumber) throws FieldValidator.ValidationException {
+    public ShipBuilder regNumber(@NotNull String regNumber) throws FieldValidationException {
         this.regNumber = validator.requireNonBlank("Registration number", regNumber);
         return this;
     }
 
-    public ShipBuilder imo(@NotNull String imo) throws FieldValidator.ValidationException {
+    public ShipBuilder imo(@NotNull String imo) throws FieldValidationException {
         this.imo = validator.requireValidImo("IMO", imo);
         return this;
     }
 
-    public ShipBuilder speed(int speed) throws FieldValidator.ValidationException {
+    public ShipBuilder speed(int speed) throws FieldValidationException {
         // TODO
         return this;
     }
 
-    public ShipBuilder photoPath(@NotNull Path photoPath) throws FieldValidator.ValidationException {
+    public ShipBuilder photoPath(@NotNull Path photoPath) throws FieldValidationException {
         // TODO
         return this;
     }
 
-    public ShipBuilder numPassengers(@NotNull String numPassengers) throws FieldValidator.ValidationException {
+    public ShipBuilder numPassengers(@NotNull String numPassengers) throws FieldValidationException {
         this.numPassengers = validator.requirePositiveInt("Number of passengers", numPassengers);
         return this;
     }
 
-    public ShipBuilder volume(@NotNull String volume) throws FieldValidator.ValidationException {
+    public ShipBuilder volume(@NotNull String volume) throws FieldValidationException {
         this.volume = validator.requirePositiveDouble("Volume", volume);
         return this;
     }
 
-    public ShipBuilder capacity(@NotNull String capacity) throws FieldValidator.ValidationException {
+    public ShipBuilder capacity(@NotNull String capacity) throws FieldValidationException {
         this.capacity = validator.requirePositiveInt("Capacity", capacity);
         return this;
     }
