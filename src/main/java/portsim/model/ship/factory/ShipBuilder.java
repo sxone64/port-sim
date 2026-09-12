@@ -65,17 +65,17 @@ public final class ShipBuilder {
     }
 
     public ShipBuilder name(@NotNull String name) throws FieldValidationException {
-        this.name = validator.requireNonBlank("Name", name);
+        this.name = validator.requireNotBlank("Name", name);
         return this;
     }
 
     public ShipBuilder engineNumber(@NotNull String engineNumber) throws FieldValidationException {
-        this.engineNumber = validator.requireNonBlank("Engine number", engineNumber);
+        this.engineNumber = validator.requireNotBlank("Engine number", engineNumber);
         return this;
     }
 
     public ShipBuilder regNumber(@NotNull String regNumber) throws FieldValidationException {
-        this.regNumber = validator.requireNonBlank("Registration number", regNumber);
+        this.regNumber = validator.requireNotBlank("Registration number", regNumber);
         return this;
     }
 
@@ -85,7 +85,7 @@ public final class ShipBuilder {
     }
 
     public ShipBuilder speed(int speed) throws FieldValidationException {
-        // TODO
+        this.speed = validator.requireValidSpeed("Speed", speed);
         return this;
     }
 
