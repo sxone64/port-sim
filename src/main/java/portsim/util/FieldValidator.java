@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Function;
 
 public final class FieldValidator {
     private static final FieldValidator INSTANCE = new FieldValidator();
@@ -25,35 +26,19 @@ public final class FieldValidator {
     }
 
     public int requirePositiveInt(String field, String value) throws FieldValidationException {
-        var notBlank = requireNotBlank(field, value);
-
-        int parsedValue;
-        try {
-            parsedValue = Integer.parseInt(notBlank);
-        } catch (NumberFormatException e) {
-            throw new FieldValidationException("%s must be a valid integer".formatted(field));
-        }
-
-        if (parsedValue <= 0)
-            throw new FieldValidationException("%s must be greater than zero".formatted(field));
-
-        return parsedValue;
+        return requirePositiveNumber(
+                field,
+                value,
+                Integer::parseInt,
+                "%s must be a valid positive whole number".formatted(field));
     }
 
     public double requirePositiveDouble(String field, String value) throws FieldValidationException {
-        var notBlank = requireNotBlank(field, value);
-
-        double parsedValue;
-        try {
-            parsedValue = Double.parseDouble(notBlank);
-        } catch (NumberFormatException e) {
-            throw new FieldValidationException("%s must be a valid decimal number".formatted(field));
-        }
-
-        if (parsedValue <= 0)
-            throw new FieldValidationException("%s must be greater than zero".formatted(field));
-
-        return parsedValue;
+        return requirePositiveNumber(
+                field,
+                value,
+                Double::parseDouble,
+                "%s must be a valid positive decimal number".formatted(field));
     }
 
     public int requireValidImo(String field, String value) throws FieldValidationException {
@@ -78,5 +63,24 @@ public final class FieldValidator {
             throw new FieldValidationException("%s must be in range [%d, %d]".formatted(field, MIN_SPEED, MAX_SPEED));
 
         return speed;
+    }
+
+    private @NotNull <T extends Number> T requirePositiveNumber(
+            String field,
+            String value,
+            @NotNull Function<String, T> parser,
+            String parseFailedMessage) throws FieldValidationException {
+        requireNotBlank(field, value);
+
+        try {
+            var parsed = parser.apply(value);
+
+            if (parsed.doubleValue() <= 0)
+                throw new FieldValidationException("%s must be a positive number".formatted(field));
+
+            return parsed;
+        } catch (NumberFormatException e) {
+            throw new FieldValidationException(parseFailedMessage);
+        }
     }
 }
