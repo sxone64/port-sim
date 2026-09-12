@@ -2,6 +2,7 @@ package portsim.util;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class FieldValidator {
@@ -65,9 +66,9 @@ public final class FieldValidator {
         return imo;
     }
 
-    public @NotNull Path requireNotNull(String field, Path path) throws FieldValidationException {
-        if (path == null)
-            throw new FieldValidationException("%s must be selected.".formatted(field));
+    public @NotNull Path requireValidPath(String field, Path path) throws FieldValidationException {
+        if (path == null || !Files.exists(path))
+            throw new FieldValidationException("%s doesn't exist".formatted(field));
 
         return path;
     }

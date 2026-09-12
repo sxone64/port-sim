@@ -90,7 +90,7 @@ public final class ShipBuilder {
     }
 
     public ShipBuilder photoPath(@NotNull Path photoPath) throws FieldValidationException {
-        // TODO
+        this.photoPath = validator.requireValidPath("Photo", photoPath);
         return this;
     }
 
