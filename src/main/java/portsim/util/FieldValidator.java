@@ -1,6 +1,7 @@
 package portsim.util;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,14 +19,16 @@ public final class FieldValidator {
 
     private FieldValidator() {}
 
-    public @NotNull String requireNotBlank(String field, String value) throws FieldValidationException {
+    public @NotNull String requireNotBlank(@NotNull String field,
+                                           @Nullable String value) throws FieldValidationException {
         if (value == null || value.isBlank())
             throw new FieldValidationException("%s cannot be blank".formatted(field));
 
         return value;
     }
 
-    public int requirePositiveInt(String field, String value) throws FieldValidationException {
+    public int requirePositiveInt(@NotNull String field,
+                                  @Nullable String value) throws FieldValidationException {
         return requirePositiveNumber(
                 field,
                 value,
@@ -33,7 +36,8 @@ public final class FieldValidator {
                 "%s must be a valid positive whole number".formatted(field));
     }
 
-    public double requirePositiveDouble(String field, String value) throws FieldValidationException {
+    public double requirePositiveDouble(@NotNull String field,
+                                        @Nullable String value) throws FieldValidationException {
         return requirePositiveNumber(
                 field,
                 value,
@@ -41,7 +45,8 @@ public final class FieldValidator {
                 "%s must be a valid positive decimal number".formatted(field));
     }
 
-    public int requireValidImo(String field, String value) throws FieldValidationException {
+    public int requireValidImo(@NotNull String field,
+                               @Nullable String value) throws FieldValidationException {
         var notBlank = requireNotBlank(field, value);
         int imo = requirePositiveInt(field, notBlank);
 
@@ -51,14 +56,16 @@ public final class FieldValidator {
         return imo;
     }
 
-    public @NotNull Path requireValidPath(String field, Path path) throws FieldValidationException {
+    public @NotNull Path requireValidPath(@NotNull String field,
+                                          @Nullable Path path) throws FieldValidationException {
         if (path == null || !Files.exists(path))
             throw new FieldValidationException("%s doesn't exist".formatted(field));
 
         return path;
     }
 
-    public int requireValidSpeed(String field, int speed) throws FieldValidationException {
+    public int requireValidSpeed(@NotNull String field,
+                                 int speed) throws FieldValidationException {
         if (speed < MIN_SPEED || speed > MAX_SPEED)
             throw new FieldValidationException("%s must be in range [%d, %d]".formatted(field, MIN_SPEED, MAX_SPEED));
 
@@ -66,10 +73,10 @@ public final class FieldValidator {
     }
 
     private @NotNull <T extends Number> T requirePositiveNumber(
-            String field,
-            String value,
+            @NotNull String field,
+            @Nullable String value,
             @NotNull Function<String, T> parser,
-            String parseFailedMessage) throws FieldValidationException {
+            @NotNull String parseFailedMessage) throws FieldValidationException {
         requireNotBlank(field, value);
 
         try {
