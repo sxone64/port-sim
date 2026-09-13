@@ -10,6 +10,8 @@ public final class AppResources {
     private static final AppResources INSTANCE = new AppResources();
 
     private final URL ADMIN_FXML = requireResource("/fxml/admin.fxml");
+    private final URL SHIP_FORM_FXML = requireResource("/fxml/ship-form.fxml");
+
     private final Path DEFAULT_PHOTO_PATH = resourcePath("/images/default.png");
 
     public static AppResources getInstance() {
@@ -20,6 +22,10 @@ public final class AppResources {
 
     public URL getAdminFxml() {
         return ADMIN_FXML;
+    }
+
+    public URL getShipFormFxml() {
+        return SHIP_FORM_FXML;
     }
 
     public Path getDefaultPhotoPath() {
