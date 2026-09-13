@@ -10,6 +10,7 @@ import portsim.model.ship.Ship;
 import portsim.service.PortService;
 
 import java.util.List;
+import java.util.Optional;
 
 public final class AdminViewModel {
     private final IntegerProperty totalShipsProperty = new SimpleIntegerProperty(0);
@@ -58,6 +59,10 @@ public final class AdminViewModel {
 
     public @NotNull @Unmodifiable List<Terminal> getTerminals() {
         return portService.getTerminals();
+    }
+
+    public @NotNull Optional<Integer> getIdTerminal() {
+        return Optional.ofNullable(idTerminal);
     }
 
     public void refresh() {

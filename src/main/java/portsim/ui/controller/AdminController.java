@@ -2,14 +2,22 @@ package portsim.ui.controller;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
+import portsim.io.AppResources;
 import portsim.model.ship.Ship;
 import portsim.ui.viewmodel.AdminViewModel;
+import portsim.ui.viewmodel.ShipFormViewModel;
+
+import java.io.IOException;
 
 import static javafx.geometry.Pos.CENTER;
+import static javafx.stage.Modality.APPLICATION_MODAL;
 
 public final class AdminController {
     @FXML private VBox terminalsVBox;
@@ -129,7 +137,32 @@ public final class AdminController {
 
     @FXML
     private void onAddShipAction() {
-        // TODO
+        var idTerminal = viewModel.getIdTerminal()
+                .orElseThrow(() -> new IllegalStateException("Terminal not selected"));
+
+        var loader = new FXMLLoader(AppResources.getInstance().getShipFormFxml());
+
+        Scene scene;
+        try {
+            scene = new Scene(loader.load());
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to load the FXML resource", e);
+        }
+
+        ShipFormController controller = loader.getController();
+        controller.initialize(new ShipFormViewModel(idTerminal));
+
+        var stage = new Stage();
+
+        stage.initModality(APPLICATION_MODAL);
+        stage.initOwner(addShipBtn.getScene().getWindow());
+        stage.setTitle("Add ship - Terminal %d".formatted(idTerminal));
+        stage.setScene(scene);
+
+        stage.setResizable(false);
+        stage.showAndWait();
+
+        viewModel.refresh();
     }
 
     @FXML
