@@ -56,6 +56,7 @@
         <Label text="Photo" />
         <HBox spacing="10.0">
             <TextField fx:id="photoField" editable="false" focusTraversable="false" HBox.hgrow="ALWAYS" />
+            <Button fx:id="clearBtn" onAction="#onClearAction" text="Clear" />
             <Button onAction="#onBrowseAction" text="Browse" />
         </HBox>
     </VBox>

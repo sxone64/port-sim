@@ -47,6 +47,7 @@ public final class ShipFormController {
     @FXML private TextField engineNumberField;
 
     @FXML private TextField photoField;
+    @FXML private Button clearBtn;
 
     @FXML private Label shipTypeLabel;
     @FXML private VBox specificFieldsVBox;
@@ -91,6 +92,9 @@ public final class ShipFormController {
                 },
                 viewModel.photoPathProperty())
         );
+
+        clearBtn.visibleProperty().bind(viewModel.isClearPhotoPathEnabled());
+        clearBtn.managedProperty().bind(viewModel.isClearPhotoPathEnabled());
     }
 
     private void setupShipTypeCombo() {
@@ -175,6 +179,11 @@ public final class ShipFormController {
         textField.textProperty().bindBidirectional(property);
 
         return new VBox(label, textField);
+    }
+
+    @FXML
+    private void onClearAction() {
+        viewModel.setPhotoPath(null);
     }
 
     @FXML
