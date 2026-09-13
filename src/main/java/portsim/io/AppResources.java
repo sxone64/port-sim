@@ -20,15 +20,15 @@ public final class AppResources {
 
     private AppResources() {}
 
-    public URL getAdminFxml() {
+    public @NotNull URL getAdminFxml() {
         return ADMIN_FXML;
     }
 
-    public URL getShipFormFxml() {
+    public @NotNull URL getShipFormFxml() {
         return SHIP_FORM_FXML;
     }
 
-    public Path getDefaultPhotoPath() {
+    public @NotNull Path getDefaultPhotoPath() {
         return DEFAULT_PHOTO_PATH;
     }
 
