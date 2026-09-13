@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import portsim.io.AppLogger;
+import portsim.io.AppResources;
 
 import java.io.IOException;
 
@@ -36,7 +37,7 @@ public class Main extends Application {
                         throwable)
         );
 
-        var loader = new FXMLLoader(getClass().getResource("/fxml/admin.fxml"));
+        var loader = new FXMLLoader(AppResources.getInstance().getAdminFxml());
 
         Scene scene;
         try {
