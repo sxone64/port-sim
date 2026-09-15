@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import portsim.io.PortPersistence;
 import portsim.model.Port;
 import portsim.model.Terminal;
-import portsim.model.TerminalNotFoundException;
+import portsim.model.NotFoundException;
 import portsim.model.ship.Ship;
 
 import java.util.HashSet;
@@ -15,6 +15,8 @@ import java.util.function.ToIntFunction;
 
 public final class PortService {
     private static final PortService INSTANCE = new PortService();
+
+    private static final String TERMINAL_NOT_FOUND = "Terminal with ID %d doesn't exist";
 
     public static PortService getInstance() {
         return INSTANCE;
@@ -57,7 +59,7 @@ public final class PortService {
 
     public int getFreeDocks(int idTerminal) {
         var terminal = port.getTerminal(idTerminal)
-                .orElseThrow(() -> new TerminalNotFoundException(idTerminal));
+                .orElseThrow(() -> new NotFoundException(TERMINAL_NOT_FOUND.formatted(idTerminal)));
 
         return terminal.getFreeDocks();
     }
@@ -72,7 +74,7 @@ public final class PortService {
 
     public void addShip(int idTerminal, @NotNull Ship ship) throws ImoConflictException {
         var terminal = port.getTerminal(idTerminal)
-                .orElseThrow(() -> new TerminalNotFoundException(idTerminal));
+                .orElseThrow(() -> new NotFoundException(TERMINAL_NOT_FOUND.formatted(idTerminal)));
 
         if (imoRegistry.contains(ship.getImo()))
             throw new ImoConflictException("Specified ship IMO is already taken");
