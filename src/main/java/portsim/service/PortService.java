@@ -81,6 +81,14 @@ public final class PortService {
         portPersistence.savePort(port);
     }
 
+    public void removeShip(int idTerminal, @NotNull Ship ship) {
+        var terminal = getTerminal(idTerminal);
+
+        imoRegistry.remove(ship.getImo());
+        terminal.removeShip(ship);
+        portPersistence.savePort(port);
+    }
+
     private int getTotalCount(ToIntFunction<Terminal> mapper) {
         return port.terminals().stream()
                 .mapToInt(mapper)

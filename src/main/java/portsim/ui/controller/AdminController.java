@@ -122,7 +122,8 @@ public final class AdminController {
                 });
 
                 deleteButton.setOnAction(_ -> {
-                    // TODO
+                    var ship = getTableView().getItems().get(getIndex());
+                    viewModel.removeShip(ship);
                 });
             }
 

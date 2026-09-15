@@ -83,6 +83,13 @@ public final class AdminViewModel {
         refreshTerminalShips();
     }
 
+    public void removeShip(Ship ship) {
+        if (idTerminal != null) {
+            portService.removeShip(idTerminal, ship);
+            refresh();
+        }
+    }
+
     // If there's no free dock at the current terminal, disable the add ship button
     private void checkFreeDocks() {
         if (idTerminal != null) {

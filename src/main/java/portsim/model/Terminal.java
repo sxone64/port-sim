@@ -82,6 +82,14 @@ public final class Terminal implements Serializable {
         else throw new TerminalFullException(idTerminal);
     }
 
+    public void removeShip(@NotNull Ship ship) {
+        if (!shipPositions.containsKey(ship))
+            throw new NotFoundException("Specified ship is not part of this terminal");
+
+        shipPositions.remove(ship);
+        ++freeDocks;
+    }
+
     /*
         Returns Cell.Type initialized 2D array of Cell objects based on TRANSIT_MASK and CHANNEL_MASK.
         Transit lanes are always on the left side of the grid and follow TRANSIT_MASK column-wise.
