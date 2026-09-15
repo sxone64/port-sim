@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 import portsim.io.AppResources;
 import portsim.model.ship.Ship;
+import portsim.ui.ShipTypeLabels;
 import portsim.ui.viewmodel.AdminViewModel;
 import portsim.ui.viewmodel.ShipFormViewModel;
 
@@ -101,7 +102,7 @@ public final class AdminController {
         );
 
         typeColumn.setCellValueFactory(cell ->
-                new SimpleStringProperty(cell.getValue().getClass().getSimpleName())
+                new SimpleStringProperty(ShipTypeLabels.of(cell.getValue().getClass()))
         );
 
         regNumberColumn.setCellValueFactory(cell ->
