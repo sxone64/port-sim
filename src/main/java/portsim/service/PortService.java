@@ -8,7 +8,9 @@ import portsim.model.Terminal;
 import portsim.model.TerminalNotFoundException;
 import portsim.model.ship.Ship;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.ToIntFunction;
 
 public final class PortService {
@@ -19,11 +21,17 @@ public final class PortService {
     }
 
     private final Port port;
+    private final Set<Integer> imoRegistry = new HashSet<>();
 
     private final PortPersistence portPersistence = PortPersistence.getInstance();
 
     private PortService() {
         port = portPersistence.loadOrCreate();
+
+        port.terminals().stream()
+                .flatMap(terminal -> terminal.getShips().stream())
+                .map(Ship::getImo)
+                .forEach(imoRegistry::add);
     }
 
     public @NotNull @Unmodifiable List<Ship> getShips(int idTerminal) {
@@ -47,23 +55,31 @@ public final class PortService {
         return getTotalCount(Terminal::getFreeDocks);
     }
 
-    public @NotNull @Unmodifiable List<Terminal> getTerminals() {
-        return List.copyOf(port.terminals());
-    }
-
-    public void addShip(int idTerminal, @NotNull Ship ship) {
-        var terminal = port.getTerminal(idTerminal)
-                .orElseThrow(() -> new TerminalNotFoundException(idTerminal));
-
-        terminal.addShip(ship);
-        portPersistence.savePort(port);
-    }
-
     public int getFreeDocks(int idTerminal) {
         var terminal = port.getTerminal(idTerminal)
                 .orElseThrow(() -> new TerminalNotFoundException(idTerminal));
 
         return terminal.getFreeDocks();
+    }
+
+    public @NotNull @Unmodifiable List<Terminal> getTerminals() {
+        return List.copyOf(port.terminals());
+    }
+
+    public boolean isImoTaken(int imo) {
+        return imoRegistry.contains(imo);
+    }
+
+    public void addShip(int idTerminal, @NotNull Ship ship) throws ImoConflictException {
+        var terminal = port.getTerminal(idTerminal)
+                .orElseThrow(() -> new TerminalNotFoundException(idTerminal));
+
+        if (imoRegistry.contains(ship.getImo()))
+            throw new ImoConflictException("Specified ship IMO is already taken");
+
+        imoRegistry.add(ship.getImo());
+        terminal.addShip(ship);
+        portPersistence.savePort(port);
     }
 
     private int getTotalCount(ToIntFunction<Terminal> mapper) {

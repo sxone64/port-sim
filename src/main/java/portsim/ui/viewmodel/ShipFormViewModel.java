@@ -9,6 +9,7 @@ import portsim.model.ship.Cruiser;
 import portsim.model.ship.Ship;
 import portsim.model.ship.Tanker;
 import portsim.model.ship.factory.ShipBuilder;
+import portsim.service.ImoConflictException;
 import portsim.service.PortService;
 import portsim.util.FieldValidationException;
 
@@ -94,7 +95,7 @@ public final class ShipFormViewModel {
             portService.addShip(idTerminal, ship);
 
             return true;
-        } catch (FieldValidationException e) {
+        } catch (FieldValidationException | ImoConflictException e) {
             onConfirmFailed.accept(e.getMessage());
             return false;
         }
