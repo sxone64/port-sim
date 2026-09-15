@@ -104,9 +104,9 @@ public final class ShipFormViewModel {
     private Ship buildShip(Class<? extends Ship> type) throws FieldValidationException {
         var builder = ShipBuilder.of(type)
                 .name(nameProperty.getValue())
-                .engineNumber(engineNumberProperty.getValue())
-                .regNumber(regNumberProperty.getValue())
                 .imo(imoProperty.getValue())
+                .regNumber(regNumberProperty.getValue())
+                .engineNumber(engineNumberProperty.getValue())
                 .speed(getRandomSpeed());
 
         var photoPath = photoPathProperty.getValue();
