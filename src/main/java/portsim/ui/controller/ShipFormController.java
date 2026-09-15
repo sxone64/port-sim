@@ -13,27 +13,27 @@ import portsim.model.ship.Cruiser;
 import portsim.model.ship.Ship;
 import portsim.model.ship.Tanker;
 import portsim.model.ship.state.impl.*;
+import portsim.ui.ShipTypeLabels;
 import portsim.ui.viewmodel.ShipFormViewModel;
 
-import java.util.Map;
+import java.util.Set;
 
 import static javafx.scene.control.Alert.AlertType.ERROR;
 
 public final class ShipFormController {
-    // Values are used to get UI friendly names instead of relying on e.g. class' simple name
-    private static final Map<Class<? extends Ship>, String> STATE_SHIPS = Map.of(
-            CustomsCruiser.class, "Customs cruiser",
-            CustomsTanker.class, "Customs tanker",
-            FireBrigadeTanker.class, "Fire brigade tanker",
-            GuardContainerShip.class, "Guard container ship",
-            GuardCruiser.class, "Guard cruiser",
-            GuardTanker.class, "Guard tanker"
+    private static final Set<Class<? extends Ship>> STATE_SHIPS = Set.of(
+            CustomsCruiser.class,
+            CustomsTanker.class,
+            FireBrigadeTanker.class,
+            GuardContainerShip.class,
+            GuardCruiser.class,
+            GuardTanker.class
     );
 
-    private static final Map<Class<? extends Ship>, String> COMMERCIAL_SHIPS = Map.of(
-            ContainerShip.class, "Container ship",
-            Cruiser.class, "Cruiser",
-            Tanker.class, "Tanker"
+    private static final Set<Class<? extends Ship>> COMMERCIAL_SHIPS = Set.of(
+            ContainerShip.class,
+            Cruiser.class,
+            Tanker.class
     );
 
     @FXML private ToggleButton commercialToggleBtn;
@@ -136,15 +136,15 @@ public final class ShipFormController {
 
     private void updateShipTypeCombo() {
         shipTypeCombo.getItems().setAll(commercialToggleBtn.isSelected()
-                ? COMMERCIAL_SHIPS.keySet()
-                : STATE_SHIPS.keySet()
+                ? COMMERCIAL_SHIPS
+                : STATE_SHIPS
         );
 
         shipTypeCombo.getSelectionModel().selectFirst();
     }
 
     private String getTypeName(Class<? extends Ship> type) {
-        return commercialToggleBtn.isSelected() ? COMMERCIAL_SHIPS.get(type) : STATE_SHIPS.get(type);
+        return ShipTypeLabels.of(type);
     }
 
     private void updateSpecificFields(@NotNull Class<? extends Ship> type) {
