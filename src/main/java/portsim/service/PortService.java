@@ -37,8 +37,8 @@ public final class PortService {
     }
 
     public @NotNull @Unmodifiable List<Ship> getShips(int idTerminal) {
-        var terminal = port.getTerminal(idTerminal);
-        return terminal.map(value -> List.copyOf(value.getShips())).orElseGet(List::of);
+        var terminal = getTerminal(idTerminal);
+        return List.copyOf(terminal.getShips());
     }
 
     public int getTotalShips() {
@@ -58,9 +58,7 @@ public final class PortService {
     }
 
     public int getFreeDocks(int idTerminal) {
-        var terminal = port.getTerminal(idTerminal)
-                .orElseThrow(() -> new NotFoundException(TERMINAL_NOT_FOUND.formatted(idTerminal)));
-
+        var terminal = getTerminal(idTerminal);
         return terminal.getFreeDocks();
     }
 
@@ -73,8 +71,7 @@ public final class PortService {
     }
 
     public void addShip(int idTerminal, @NotNull Ship ship) throws ImoConflictException {
-        var terminal = port.getTerminal(idTerminal)
-                .orElseThrow(() -> new NotFoundException(TERMINAL_NOT_FOUND.formatted(idTerminal)));
+        var terminal = getTerminal(idTerminal);
 
         if (imoRegistry.contains(ship.getImo()))
             throw new ImoConflictException("Specified ship IMO is already taken");
@@ -88,5 +85,10 @@ public final class PortService {
         return port.terminals().stream()
                 .mapToInt(mapper)
                 .sum();
+    }
+
+    private @NotNull Terminal getTerminal(int idTerminal) {
+        return port.getTerminal(idTerminal)
+                .orElseThrow(() -> new NotFoundException(TERMINAL_NOT_FOUND.formatted(idTerminal)));
     }
 }
