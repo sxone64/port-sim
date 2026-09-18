@@ -15,6 +15,8 @@ public final class Terminal implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    private static final String SHIP_NOT_FOUND = "Specified ship is not part of this terminal";
+
     private static final List<Cell.Type> CHANNEL_MASK = List.of(CHANNEL_LEFT, CHANNEL_RIGHT);
     private static final List<Cell.Type> TRANSIT_MASK = List.of(TRANSIT_DOWN, TRANSIT_UP);
 
@@ -84,10 +86,18 @@ public final class Terminal implements Serializable {
 
     public void removeShip(@NotNull Ship ship) {
         if (!shipPositions.containsKey(ship))
-            throw new NotFoundException("Specified ship is not part of this terminal");
+            throw new NotFoundException(SHIP_NOT_FOUND);
 
         shipPositions.remove(ship);
         ++freeDocks;
+    }
+
+    public void updateShip(@NotNull Ship oldShip, @NotNull Ship newShip) {
+        if (!shipPositions.containsKey(oldShip))
+            throw new NotFoundException(SHIP_NOT_FOUND);
+
+        var oldPosition = shipPositions.remove(oldShip);
+        shipPositions.put(newShip, oldPosition);
     }
 
     /*

@@ -16,7 +16,7 @@ import java.util.function.ToIntFunction;
 public final class PortService {
     private static final PortService INSTANCE = new PortService();
 
-    private static final String TERMINAL_NOT_FOUND = "Terminal with ID %d doesn't exist";
+    private static final String IMO_CONFLICT = "Specified IMO is already taken";
 
     public static PortService getInstance() {
         return INSTANCE;
@@ -74,7 +74,7 @@ public final class PortService {
         var terminal = getTerminal(idTerminal);
 
         if (imoRegistry.contains(ship.getImo()))
-            throw new ImoConflictException("Specified ship IMO is already taken");
+            throw new ImoConflictException(IMO_CONFLICT);
 
         imoRegistry.add(ship.getImo());
         terminal.addShip(ship);
@@ -89,6 +89,24 @@ public final class PortService {
         portPersistence.savePort(port);
     }
 
+    public void updateShip(int idTerminal,
+                           @NotNull Ship oldShip,
+                           @NotNull Ship newShip) throws ImoConflictException {
+        var terminal = getTerminal(idTerminal);
+
+        var newImo = newShip.getImo();
+        var isImoUpdated = oldShip.getImo() != newImo;
+
+        if (isImoUpdated && isImoTaken(newImo))
+            throw new ImoConflictException(IMO_CONFLICT);
+
+        if (isImoUpdated)
+            imoRegistry.add(newImo);
+
+        terminal.updateShip(oldShip, newShip);
+        portPersistence.savePort(port);
+    }
+
     private int getTotalCount(ToIntFunction<Terminal> mapper) {
         return port.terminals().stream()
                 .mapToInt(mapper)
@@ -97,6 +115,6 @@ public final class PortService {
 
     private @NotNull Terminal getTerminal(int idTerminal) {
         return port.getTerminal(idTerminal)
-                .orElseThrow(() -> new NotFoundException(TERMINAL_NOT_FOUND.formatted(idTerminal)));
+                .orElseThrow(() -> new NotFoundException("Terminal with ID %d doesn't exist".formatted(idTerminal)));
     }
 }

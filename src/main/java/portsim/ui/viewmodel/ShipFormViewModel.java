@@ -33,14 +33,23 @@ public final class ShipFormViewModel {
     private final StringProperty volumeProperty = new SimpleStringProperty("");
     private final StringProperty capacityProperty = new SimpleStringProperty("");
 
+    private final ObjectProperty<Ship> updateShipProperty = new SimpleObjectProperty<>(null);
+
     private final PortService portService = PortService.getInstance();
     private final Path defaultPhotoPath = AppResources.getInstance().getDefaultPhotoPath();
 
     private final int idTerminal;
     private Consumer<String> onConfirmFailed = _ -> {};
 
+    // Used when creating a new Ship instance
     public ShipFormViewModel(int idTerminal) {
         this.idTerminal = idTerminal;
+    }
+
+    // Used when updating an existing Ship instance
+    public ShipFormViewModel(int idTerminal, Ship updateShip) {
+        this(idTerminal);
+        setUpdateProperties(updateShip);
     }
 
     public StringProperty nameProperty() {
@@ -79,26 +88,58 @@ public final class ShipFormViewModel {
         return capacityProperty;
     }
 
+    public ReadOnlyObjectProperty<Ship> updateShipProperty() {
+        return updateShipProperty;
+    }
+
     public void setOnConfirmFailed(@Nullable Consumer<String> onConfirmFailed) {
         this.onConfirmFailed = onConfirmFailed;
     }
 
     public void setPhotoPath(@Nullable Path photoPath) {
-        photoPathProperty.set(photoPath);
-        isClearPhotoPathEnabled.set(photoPath != null);
+        var isDefault = photoPath == null || defaultPhotoPath.equals(photoPath);
+
+        photoPathProperty.setValue(isDefault ? null : photoPath);
+        isClearPhotoPathEnabled.setValue(!isDefault);
     }
 
-    public boolean addShip(@NotNull Class<? extends Ship> type) {
+    public boolean confirm(@NotNull Class<? extends Ship> type) {
         try {
             var ship = buildShip(type);
+            var updateShip = updateShipProperty.getValue();
 
-            portService.addShip(idTerminal, ship);
+            if (updateShip != null)
+                portService.updateShip(idTerminal, updateShip, ship);
+            else
+                portService.addShip(idTerminal, ship);
 
             return true;
         } catch (FieldValidationException | ImoConflictException e) {
             onConfirmFailed.accept(e.getMessage());
             return false;
         }
+    }
+
+    private void setUpdateProperties(@NotNull Ship updateShip) {
+        nameProperty.setValue(updateShip.getName());
+        imoProperty.setValue(String.valueOf(updateShip.getImo()));
+        regNumberProperty.setValue(updateShip.getRegNumber());
+        engineNumberProperty.setValue(updateShip.getEngineNumber());
+
+        var photoPath = updateShip.getPhotoPath();
+        setPhotoPath(photoPath);
+
+        switch (updateShip) {
+            case Cruiser cruiser ->
+                    numPassengersProperty.setValue(String.valueOf(cruiser.getNumPassengers()));
+            case Tanker tanker ->
+                    volumeProperty.setValue(String.valueOf(tanker.getVolume()));
+            case ContainerShip containerShip ->
+                    capacityProperty.setValue(String.valueOf(containerShip.getCapacity()));
+            default -> {}
+        }
+
+        updateShipProperty.setValue(updateShip);
     }
 
     private Ship buildShip(Class<? extends Ship> type) throws FieldValidationException {

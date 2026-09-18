@@ -12,6 +12,7 @@ import portsim.model.ship.ContainerShip;
 import portsim.model.ship.Cruiser;
 import portsim.model.ship.Ship;
 import portsim.model.ship.Tanker;
+import portsim.model.ship.state.StateShip;
 import portsim.model.ship.state.impl.*;
 import portsim.ui.ShipTypeLabels;
 import portsim.ui.viewmodel.ShipFormViewModel;
@@ -74,8 +75,16 @@ public final class ShipFormController {
         setupGeneralBindings();
         setupShipTypeCombo();
 
-        updateShipTypeCombo();
-        confirmBtn.setText("Add ship");
+        var updateShip = viewModel.updateShipProperty().getValue();
+        var preselect = updateShip == null ? null : updateShip.getClass();
+
+        if (updateShip != null) {
+            var isStateShip = updateShip instanceof StateShip;
+
+            (isStateShip ? stateToggleBtn : commercialToggleBtn).setSelected(true);
+        }
+
+        updateShipTypeCombo(preselect);
     }
 
     private void setupGeneralBindings() {
@@ -95,13 +104,20 @@ public final class ShipFormController {
 
         clearBtn.visibleProperty().bind(viewModel.isClearPhotoPathEnabled());
         clearBtn.managedProperty().bind(viewModel.isClearPhotoPathEnabled());
+
+        confirmBtn.textProperty().bind(Bindings.createStringBinding(
+                () -> viewModel.updateShipProperty().getValue() != null
+                        ? "Update ship"
+                        : "Add ship",
+                viewModel.updateShipProperty())
+        );
     }
 
     private void setupShipTypeCombo() {
         shipTypeGroup.selectedToggleProperty().addListener(
                 (_, oldValue, newValue) -> {
                     if (newValue == null) oldValue.setSelected(true);
-                    else updateShipTypeCombo();
+                    else updateShipTypeCombo(null);
                 });
 
         shipTypeCombo.setCellFactory(_ -> new ListCell<>() {
@@ -134,13 +150,16 @@ public final class ShipFormController {
         );
     }
 
-    private void updateShipTypeCombo() {
+    private void updateShipTypeCombo(Class<? extends Ship> preselect) {
         shipTypeCombo.getItems().setAll(commercialToggleBtn.isSelected()
                 ? COMMERCIAL_SHIPS
                 : STATE_SHIPS
         );
 
-        shipTypeCombo.getSelectionModel().selectFirst();
+        if (preselect != null)
+            shipTypeCombo.getSelectionModel().select(preselect);
+        else
+            shipTypeCombo.getSelectionModel().selectFirst();
     }
 
     private String getTypeName(Class<? extends Ship> type) {
@@ -209,7 +228,7 @@ public final class ShipFormController {
     @FXML
     private void onConfirmAction() {
         var type = shipTypeCombo.getSelectionModel().getSelectedItem();
-        var success = viewModel.addShip(type);
+        var success = viewModel.confirm(type);
 
         if (success) {
             var stage = (Stage) confirmBtn.getScene().getWindow();

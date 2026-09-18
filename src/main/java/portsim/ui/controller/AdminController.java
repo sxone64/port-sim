@@ -21,6 +21,9 @@ import static javafx.geometry.Pos.CENTER;
 import static javafx.stage.Modality.APPLICATION_MODAL;
 
 public final class AdminController {
+    private static final String TERMINAL_NOT_FOUND = "Operation requires a terminal to proceed";
+    private static final String FXML_LOAD_FAILED = "Failed to load the FXML resource";
+
     @FXML private VBox terminalsVBox;
     @FXML private Label totalShipsLabel;
     @FXML private Label totalFreeDocksLabel;
@@ -118,7 +121,8 @@ public final class AdminController {
                 container.setAlignment(CENTER);
 
                 updateButton.setOnAction(_ -> {
-                    // TODO
+                    var ship = getTableView().getItems().get(getIndex());
+                    onUpdateAction(ship);
                 });
 
                 deleteButton.setOnAction(_ -> {
@@ -140,7 +144,7 @@ public final class AdminController {
     @FXML
     private void onAddShipAction() {
         var idTerminal = viewModel.getIdTerminal()
-                .orElseThrow(() -> new IllegalStateException("Terminal not selected"));
+                .orElseThrow(() -> new IllegalStateException(TERMINAL_NOT_FOUND));
 
         var loader = new FXMLLoader(AppResources.getInstance().getShipFormFxml());
 
@@ -148,7 +152,7 @@ public final class AdminController {
         try {
             scene = new Scene(loader.load());
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to load the FXML resource", e);
+            throw new IllegalStateException(FXML_LOAD_FAILED, e);
         }
 
         ShipFormController controller = loader.getController();
@@ -159,6 +163,35 @@ public final class AdminController {
         stage.initModality(APPLICATION_MODAL);
         stage.initOwner(addShipBtn.getScene().getWindow());
         stage.setTitle("Add ship - Terminal %d".formatted(idTerminal));
+        stage.setScene(scene);
+
+        stage.setResizable(false);
+        stage.showAndWait();
+
+        viewModel.refresh();
+    }
+
+    private void onUpdateAction(Ship ship) {
+        var idTerminal = viewModel.getIdTerminal()
+                .orElseThrow(() -> new IllegalStateException(TERMINAL_NOT_FOUND));
+
+        var loader = new FXMLLoader(AppResources.getInstance().getShipFormFxml());
+
+        Scene scene;
+        try {
+            scene = new Scene(loader.load());
+        } catch (IOException e) {
+            throw new IllegalStateException(FXML_LOAD_FAILED, e);
+        }
+
+        ShipFormController controller = loader.getController();
+        controller.initialize(new ShipFormViewModel(idTerminal, ship));
+
+        var stage = new Stage();
+
+        stage.initModality(APPLICATION_MODAL);
+        stage.initOwner(addShipBtn.getScene().getWindow());
+        stage.setTitle("Update ship - Terminal %d".formatted(idTerminal));
         stage.setScene(scene);
 
         stage.setResizable(false);
