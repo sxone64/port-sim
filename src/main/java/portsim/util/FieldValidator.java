@@ -10,8 +10,11 @@ import java.util.function.Function;
 public final class FieldValidator {
     private static final FieldValidator INSTANCE = new FieldValidator();
 
-    private static final int IMO_LENGTH = 7;
+    public static final int MIN_IMO = 1_000_000, MAX_IMO = 9_999_999;
     public static final int MIN_SPEED = 30, MAX_SPEED = 120;
+    public static final int MIN_CAPACITY = 1_000, MAX_CAPACITY = 24_000;
+    public static final int MIN_NUM_PASSENGERS = 500, MAX_NUM_PASSENGERS = 7_000;
+    public static final int MIN_VOLUME = 200_000, MAX_VOLUME = 3_000_000;
 
     public static FieldValidator getInstance() {
         return INSTANCE;
@@ -50,8 +53,8 @@ public final class FieldValidator {
         var notBlank = requireNotBlank(field, value);
         int imo = requirePositiveInt(field, notBlank);
 
-        if (value.length() != IMO_LENGTH)
-            throw new FieldValidationException("%s must be exactly %d digits long".formatted(field, IMO_LENGTH));
+        if (imo < MIN_IMO || imo > MAX_IMO)
+            throw new FieldValidationException("%s must be exactly 7 digits long".formatted(field));
 
         return imo;
     }
@@ -66,10 +69,25 @@ public final class FieldValidator {
 
     public int requireValidSpeed(@NotNull String field,
                                  int speed) throws FieldValidationException {
-        if (speed < MIN_SPEED || speed > MAX_SPEED)
-            throw new FieldValidationException("%s must be in range [%d, %d]".formatted(field, MIN_SPEED, MAX_SPEED));
+        return requireInRange(field, speed, MIN_SPEED, MAX_SPEED);
+    }
 
-        return speed;
+    public int requireValidCapacity(@NotNull String field,
+                                    @Nullable String capacity) throws FieldValidationException {
+        var parsed = requirePositiveInt(field, capacity);
+        return requireInRange(field, parsed, MIN_CAPACITY, MAX_CAPACITY);
+    }
+
+    public int requireValidNumPassengers(@NotNull String field,
+                                         @Nullable String numPassengers) throws FieldValidationException {
+        var parsed = requirePositiveInt(field, numPassengers);
+        return requireInRange(field, parsed, MIN_NUM_PASSENGERS, MAX_NUM_PASSENGERS);
+    }
+
+    public double requireValidVolume(@NotNull String field,
+                                     @Nullable String volume) throws FieldValidationException {
+        var parsed = requirePositiveDouble(field, volume);
+        return requireInRange(field, parsed, MIN_VOLUME, MAX_VOLUME);
     }
 
     private @NotNull <T extends Number> T requirePositiveNumber(
@@ -89,5 +107,17 @@ public final class FieldValidator {
         } catch (NumberFormatException e) {
             throw new FieldValidationException(parseFailedMessage);
         }
+    }
+
+    private <T extends Number> @NotNull T requireInRange(
+            @NotNull String field,
+            @NotNull T value,
+            int min, int max) throws FieldValidationException {
+
+        if (value.doubleValue() < min || value.doubleValue() > max)
+            throw new FieldValidationException(
+                    "%s must be between %,d and %,d".formatted(field, min, max));
+
+        return value;
     }
 }

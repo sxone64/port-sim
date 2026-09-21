@@ -95,17 +95,17 @@ public final class ShipBuilder {
     }
 
     public ShipBuilder numPassengers(@NotNull String numPassengers) throws FieldValidationException {
-        this.numPassengers = validator.requirePositiveInt("Number of passengers", numPassengers);
+        this.numPassengers = validator.requireValidNumPassengers("Number of passengers", numPassengers);
         return this;
     }
 
     public ShipBuilder volume(@NotNull String volume) throws FieldValidationException {
-        this.volume = validator.requirePositiveDouble("Volume", volume);
+        this.volume = validator.requireValidVolume("Volume", volume);
         return this;
     }
 
     public ShipBuilder capacity(@NotNull String capacity) throws FieldValidationException {
-        this.capacity = validator.requirePositiveInt("Capacity", capacity);
+        this.capacity = validator.requireValidCapacity("Capacity", capacity);
         return this;
     }
 
