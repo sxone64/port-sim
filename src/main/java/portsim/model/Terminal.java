@@ -71,6 +71,22 @@ public final class Terminal implements Serializable {
         return Optional.ofNullable(shipPositions.get(ship));
     }
 
+    public @NotNull @Unmodifiable List<Position> getDockPositions() {
+        return List.copyOf(dockPositions);
+    }
+
+    public int getTotalColumns() {
+        return GRID_COLUMNS;
+    }
+
+    public @NotNull Cell.Type getCellType(@NotNull Position position) {
+        return getCell(position).getType();
+    }
+
+    public boolean isOccupied(@NotNull Position position) {
+        return getCell(position).isOccupied();
+    }
+
     /*
         Adds the ship to the terminal and reserves a dock spot for it.
         Added ship doesn't have a position. In order for the ship to have a position it
@@ -138,5 +154,17 @@ public final class Terminal implements Serializable {
                     dockPositions.add(new Position(row, col));
 
         return dockPositions;
+    }
+
+    private Cell getCell(Position position) {
+        if (!isInBounds(position))
+            throw new NotFoundException("Position %s is not part of this terminal's grid".formatted(position));
+
+        return grid[position.row()][position.column()];
+    }
+
+    private boolean isInBounds(@NotNull Position position) {
+        return position.row() >= 0 && position.row() < GRID_ROWS
+                && position.column() >= 0 && position.column() < GRID_COLUMNS;
     }
 }
