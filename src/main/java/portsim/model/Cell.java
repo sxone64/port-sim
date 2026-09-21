@@ -33,6 +33,10 @@ public final class Cell implements Serializable {
         return occupant != null;
     }
 
+    public @Nullable Ship getOccupant() {
+        return occupant;
+    }
+
     public void setOccupant(@Nullable Ship occupant) {
         this.occupant = occupant;
     }

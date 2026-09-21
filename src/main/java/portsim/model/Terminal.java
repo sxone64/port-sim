@@ -5,6 +5,8 @@ import org.jetbrains.annotations.Unmodifiable;
 import portsim.model.ship.Ship;
 import portsim.model.ship.state.StateShip;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
@@ -27,9 +29,13 @@ public final class Terminal implements Serializable {
     private final int idTerminal;
     private final Cell [][] grid;
 
-    // Faster lookup to avoid traversing the grid
     private final List<Position> dockPositions;
-    private final Map<Ship, Position> shipPositions;
+
+    /*
+        Grid keeps terminal's state for serialization
+        and map is used purely to avoid frequent grid traversal
+    */
+    private transient Map<Ship, Position> shipPositions;
 
     private int freeDocks;
 
@@ -41,6 +47,12 @@ public final class Terminal implements Serializable {
         shipPositions = new HashMap<>();
 
         freeDocks = dockPositions.size();
+    }
+
+    @Serial
+    private void readObject(@NotNull ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        shipPositions = buildShipPositions();
     }
 
     public int getIdTerminal() {
@@ -154,6 +166,20 @@ public final class Terminal implements Serializable {
                     dockPositions.add(new Position(row, col));
 
         return dockPositions;
+    }
+
+    private @NotNull Map<Ship, Position> buildShipPositions() {
+        var positions = new HashMap<Ship, Position>();
+
+        for (var row = 0; row < GRID_ROWS; row++)
+            for (var col = 0; col < GRID_COLUMNS; col++) {
+                var occupant = grid[row][col].getOccupant();
+
+                if (occupant != null)
+                    positions.put(occupant, new Position(row, col));
+            }
+
+        return positions;
     }
 
     private Cell getCell(Position position) {
