@@ -39,6 +39,8 @@ public final class AdminController {
     @FXML private TableColumn<Ship, String> regNumberColumn;
     @FXML private TableColumn<Ship, Void> actionsColumn;
 
+    private final ToggleGroup terminalsGroup = new ToggleGroup();
+
     private final AdminViewModel viewModel = new AdminViewModel();
 
     @FXML
@@ -54,13 +56,15 @@ public final class AdminController {
         setupTable();
     }
 
-    private @NotNull Button createTerminalButton(int idTerminal) {
-        var button = new Button();
+    private @NotNull ToggleButton createTerminalButton(int idTerminal) {
+        var toggleButton = new ToggleButton();
 
-        button.setText("Terminal %d".formatted(idTerminal));
-        button.setOnAction(_ -> onTerminalSelected(idTerminal));
+        toggleButton.setText("Terminal %d".formatted(idTerminal));
+        toggleButton.setOnAction(_ -> onTerminalSelected(idTerminal));
 
-        return button;
+        toggleButton.setToggleGroup(terminalsGroup);
+
+        return toggleButton;
     }
 
     private void onTerminalSelected(int idTerminal) {
