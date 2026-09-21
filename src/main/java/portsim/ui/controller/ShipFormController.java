@@ -12,31 +12,14 @@ import portsim.model.ship.ContainerShip;
 import portsim.model.ship.Cruiser;
 import portsim.model.ship.Ship;
 import portsim.model.ship.Tanker;
-import portsim.model.ship.state.StateShip;
+import portsim.model.ship.factory.ShipCategory;
 import portsim.model.ship.state.impl.*;
 import portsim.ui.ShipTypeLabels;
 import portsim.ui.viewmodel.ShipFormViewModel;
 
-import java.util.Set;
-
 import static javafx.scene.control.Alert.AlertType.ERROR;
 
 public final class ShipFormController {
-    private static final Set<Class<? extends Ship>> STATE_SHIPS = Set.of(
-            CustomsCruiser.class,
-            CustomsTanker.class,
-            FireBrigadeTanker.class,
-            GuardContainerShip.class,
-            GuardCruiser.class,
-            GuardTanker.class
-    );
-
-    private static final Set<Class<? extends Ship>> COMMERCIAL_SHIPS = Set.of(
-            ContainerShip.class,
-            Cruiser.class,
-            Tanker.class
-    );
-
     @FXML private ToggleButton commercialToggleBtn;
     @FXML private ToggleGroup shipTypeGroup;
     @FXML private ToggleButton stateToggleBtn;
@@ -76,12 +59,14 @@ public final class ShipFormController {
         setupShipTypeCombo();
 
         var updateShip = viewModel.updateShipProperty().getValue();
-        var preselect = updateShip == null ? null : updateShip.getClass();
+        Class<? extends Ship> preselect = null;
 
         if (updateShip != null) {
-            var isStateShip = updateShip instanceof StateShip;
-
-            (isStateShip ? stateToggleBtn : commercialToggleBtn).setSelected(true);
+            preselect = updateShip.getClass();
+            var toggle = ShipCategory.of(preselect) == ShipCategory.STATE
+                    ? stateToggleBtn
+                    : commercialToggleBtn;
+            toggle.setSelected(true);
         }
 
         updateShipTypeCombo(preselect);
@@ -151,10 +136,11 @@ public final class ShipFormController {
     }
 
     private void updateShipTypeCombo(Class<? extends Ship> preselect) {
-        shipTypeCombo.getItems().setAll(commercialToggleBtn.isSelected()
-                ? COMMERCIAL_SHIPS
-                : STATE_SHIPS
-        );
+        var category = commercialToggleBtn.isSelected()
+                ? ShipCategory.COMMERCIAL
+                : ShipCategory.STATE;
+
+        shipTypeCombo.getItems().setAll(category.types());
 
         if (preselect != null)
             shipTypeCombo.getSelectionModel().select(preselect);
