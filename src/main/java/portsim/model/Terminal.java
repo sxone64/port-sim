@@ -29,6 +29,7 @@ public final class Terminal implements Serializable {
     private final int idTerminal;
     private final Cell [][] grid;
 
+    private final List<Ship> ships;
     private final List<Position> dockPositions;
 
     /*
@@ -37,16 +38,13 @@ public final class Terminal implements Serializable {
     */
     private transient Map<Ship, Position> shipPositions;
 
-    private int freeDocks;
-
     public Terminal(int idTerminal) {
         this.idTerminal = idTerminal;
         grid = initGrid();
 
+        ships = new ArrayList<>();
         dockPositions = findDockPositions();
         shipPositions = new HashMap<>();
-
-        freeDocks = dockPositions.size();
     }
 
     @Serial
@@ -60,12 +58,10 @@ public final class Terminal implements Serializable {
     }
 
     public @NotNull @Unmodifiable List<Ship> getShips() {
-        return List.copyOf(shipPositions.keySet());
+        return List.copyOf(ships);
     }
 
     public int getStateShipCount() {
-        var ships = shipPositions.keySet();
-
         return (int) ships.stream()
                 .filter(ship -> ship instanceof StateShip)
                 .count();
@@ -76,7 +72,7 @@ public final class Terminal implements Serializable {
     }
 
     public int getFreeDocks() {
-        return freeDocks;
+        return dockPositions.size() - ships.size();
     }
 
     public @NotNull Optional<Position> getShipPosition(@NotNull Ship ship) {
@@ -100,32 +96,33 @@ public final class Terminal implements Serializable {
     }
 
     /*
-        Adds the ship to the terminal and reserves a dock spot for it.
-        Added ship doesn't have a position. In order for the ship to have a position it
-        first needs to be added to the terminal
-     */
+        Adds the ship to the terminal and reserves a dock for it without placing it on the grid
+    */
     public void addShip(@NotNull Ship ship) {
-        if (freeDocks > 0) {
-            shipPositions.put(ship, null);
-            --freeDocks;
-        }
-        else throw new TerminalFullException(idTerminal);
+        if (getFreeDocks() <= 0)
+            throw new TerminalFullException(idTerminal);
+
+        ships.add(ship);
     }
 
     public void removeShip(@NotNull Ship ship) {
-        if (!shipPositions.containsKey(ship))
+        if (!ships.remove(ship))
             throw new NotFoundException(SHIP_NOT_FOUND);
 
         shipPositions.remove(ship);
-        ++freeDocks;
     }
 
     public void updateShip(@NotNull Ship oldShip, @NotNull Ship newShip) {
-        if (!shipPositions.containsKey(oldShip))
+        var index = ships.indexOf(oldShip);
+
+        if (index == -1)
             throw new NotFoundException(SHIP_NOT_FOUND);
 
-        var oldPosition = shipPositions.remove(oldShip);
-        shipPositions.put(newShip, oldPosition);
+        ships.set(index, newShip);
+
+        var position = shipPositions.remove(oldShip);
+        if (position != null)
+            shipPositions.put(newShip, position);
     }
 
     /*
