@@ -112,7 +112,9 @@ public final class Terminal implements Serializable {
         if (!ships.remove(ship))
             throw new NotFoundException(SHIP_NOT_FOUND);
 
-        shipPositions.remove(ship);
+        var position = shipPositions.remove(ship);
+        if (position != null)
+            getCell(position).setOccupant(null);
     }
 
     public void updateShip(@NotNull Ship oldShip, @NotNull Ship newShip) {
@@ -124,8 +126,10 @@ public final class Terminal implements Serializable {
         ships.set(index, newShip);
 
         var position = shipPositions.remove(oldShip);
-        if (position != null)
+        if (position != null) {
             shipPositions.put(newShip, position);
+            getCell(position).setOccupant(newShip);
+        }
     }
 
     /*
@@ -184,7 +188,7 @@ public final class Terminal implements Serializable {
 
     private Cell getCell(Position position) {
         if (!isInBounds(position))
-            throw new NotFoundException("Position %s is not part of this terminal's grid".formatted(position));
+            throw new NotFoundException("Position %s is not part of this terminal".formatted(position));
 
         return grid[position.row()][position.column()];
     }
