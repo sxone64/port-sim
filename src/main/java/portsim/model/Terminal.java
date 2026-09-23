@@ -108,11 +108,18 @@ public final class Terminal implements Serializable {
         ships.add(ship);
     }
 
+    /*
+        Remove the ship from the terminal.
+        If the ship is registered, it's unregistered from the terminal.
+        If the ship is positioned somewhere on terminal's grid, it's removed
+     */
     public void removeShip(@NotNull Ship ship) {
-        if (!ships.remove(ship))
+        var isRegistered = ships.remove(ship);
+        var position = shipPositions.remove(ship);
+
+        if (!isRegistered && position == null)
             throw new NotFoundException(SHIP_NOT_FOUND);
 
-        var position = shipPositions.remove(ship);
         if (position != null)
             getCell(position).setOccupant(null);
     }
