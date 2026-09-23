@@ -97,9 +97,9 @@ public final class Terminal implements Serializable {
 
     /*
         Registers the ship to the terminal and reserves a dock for it without placing it on terminal's grid.
-
         Registration should be performed before any grid placement occurs if the specified ship is meant
-        to dock at the terminal
+        to dock at the terminal.
+        Unregistered ships can be part of terminal's grid as long as they don't attempt to dock at a DOCK cell
      */
     public void registerShip(@NotNull Ship ship) {
         if (getFreeDocks() <= 0)
@@ -137,6 +137,34 @@ public final class Terminal implements Serializable {
             shipPositions.put(newShip, position);
             getCell(position).setOccupant(newShip);
         }
+    }
+
+    public void placeShip(@NotNull Ship ship, @NotNull Position position) {
+        var cell = getCell(position);
+        checkNotOccupied(cell, position);
+
+        if (cell.getType() == DOCK)
+            checkShipRegistered(ship);
+
+        cell.setOccupant(ship);
+        shipPositions.put(ship, position);
+    }
+
+    public void moveShip(@NotNull Ship ship, @NotNull Position to) {
+        var from = shipPositions.get(ship);
+
+        if (from == null)
+            throw new NotFoundException(SHIP_NOT_FOUND);
+
+        var toCell = getCell(to);
+        checkNotOccupied(toCell, to);
+
+        if (toCell.getType() == DOCK)
+            checkShipRegistered(ship);
+
+        getCell(from).setOccupant(null);
+        toCell.setOccupant(ship);
+        shipPositions.put(ship, to);
     }
 
     /*
@@ -203,5 +231,16 @@ public final class Terminal implements Serializable {
     private boolean isInBounds(@NotNull Position position) {
         return position.row() >= 0 && position.row() < GRID_ROWS
                 && position.column() >= 0 && position.column() < GRID_COLUMNS;
+    }
+
+    private void checkNotOccupied(@NotNull Cell cell, @NotNull Position position) {
+        if (cell.isOccupied())
+            throw new IllegalStateException("Cell %s is already occupied by a ship".formatted(position));
+    }
+
+    private void checkShipRegistered(Ship ship) {
+        if (!ships.contains(ship))
+            throw new IllegalStateException(
+                    "Specified ship needs to be registered in order for it to dock at this terminal");
     }
 }
