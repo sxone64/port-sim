@@ -77,7 +77,7 @@ public final class PortService {
             throw new ImoConflictException(IMO_CONFLICT);
 
         imoRegistry.add(ship.getImo());
-        terminal.addShip(ship);
+        terminal.registerShip(ship);
         portPersistence.savePort(port);
     }
 

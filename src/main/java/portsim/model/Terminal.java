@@ -96,9 +96,12 @@ public final class Terminal implements Serializable {
     }
 
     /*
-        Adds the ship to the terminal and reserves a dock for it without placing it on the grid
-    */
-    public void addShip(@NotNull Ship ship) {
+        Registers the ship to the terminal and reserves a dock for it without placing it on terminal's grid.
+
+        Registration should be performed before any grid placement occurs if the specified ship is meant
+        to dock at the terminal
+     */
+    public void registerShip(@NotNull Ship ship) {
         if (getFreeDocks() <= 0)
             throw new TerminalFullException(idTerminal);
 
