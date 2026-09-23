@@ -100,8 +100,10 @@ public final class PortService {
         if (isImoUpdated && isImoTaken(newImo))
             throw new ImoConflictException(IMO_CONFLICT);
 
-        if (isImoUpdated)
+        if (isImoUpdated) {
+            imoRegistry.remove(oldShip.getImo());
             imoRegistry.add(newImo);
+        }
 
         terminal.updateShip(oldShip, newShip);
         portPersistence.savePort(port);
