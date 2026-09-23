@@ -44,7 +44,7 @@ public final class Terminal implements Serializable {
 
         ships = new ArrayList<>();
         dockPositions = findDockPositions();
-        shipPositions = new HashMap<>();
+        shipPositions = buildShipPositions();
     }
 
     @Serial
