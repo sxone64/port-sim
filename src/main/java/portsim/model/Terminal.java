@@ -19,12 +19,7 @@ public final class Terminal implements Serializable {
 
     private static final String SHIP_NOT_FOUND = "Specified ship is not part of terminal ID %d";
 
-    private static final List<Cell.Type> CHANNEL_MASK = List.of(CHANNEL_LEFT, CHANNEL_RIGHT);
-    private static final List<Cell.Type> TRANSIT_MASK = List.of(TRANSIT_DOWN, TRANSIT_UP);
-
-    // One DOCK row at the top and one at the bottom
-    private static final int GRID_ROWS = CHANNEL_MASK.size() + 2;
-    private static final int GRID_COLUMNS = 17;
+    private static final int GRID_ROWS = 4, GRID_COLUMNS = 17, TRANSIT_COLUMNS = 2;
 
     private final int idTerminal;
     private final Cell [][] grid;
@@ -85,6 +80,10 @@ public final class Terminal implements Serializable {
 
     public int getTotalColumns() {
         return GRID_COLUMNS;
+    }
+
+    public int getTransitColumns() {
+        return TRANSIT_COLUMNS;
     }
 
     public @NotNull Cell.Type getCellType(@NotNull Position position) {
@@ -167,30 +166,17 @@ public final class Terminal implements Serializable {
         shipPositions.put(ship, to);
     }
 
-    /*
-        Returns Cell.Type initialized 2D array of Cell objects based on TRANSIT_MASK and CHANNEL_MASK.
-        Transit lanes are always on the left side of the grid and follow TRANSIT_MASK column-wise.
-        When looking on the right side of the grid, first and last rows are of DOCK type and
-        rest follow CHANNEL_MASK types row-wise.
-     */
     private Cell @NotNull [][] initGrid() {
-        var transitColumns = TRANSIT_MASK.size();
         var grid = new Cell[GRID_ROWS][GRID_COLUMNS];
 
-        for (var col = 0; col < GRID_COLUMNS; col++) {
-            Cell.Type type = null;
+        for (int col = 0; col < GRID_COLUMNS; col++) {
+            var isTransitColumn = col < TRANSIT_COLUMNS;
+            var transitType = col == 0 ? TRANSIT_DOWN : TRANSIT_UP;
 
-            var isTransit = col < transitColumns;
-            if (isTransit)
-                type = TRANSIT_MASK.get(col);
-
-            for (var row = 0; row < GRID_ROWS; row++) {
-                if (!isTransit) {
-                    if (row == 0 || row == GRID_ROWS - 1) type = DOCK;
-                    else type = CHANNEL_MASK.get(row - 1);
-                }
-                grid[row][col] = new Cell(type);
-            }
+            grid[0][col] = new Cell(isTransitColumn ? transitType : Cell.Type.DOCK);
+            grid[1][col] = new Cell(isTransitColumn ? transitType : Cell.Type.CHANNEL_LEFT);
+            grid[2][col] = new Cell(isTransitColumn ? transitType : Cell.Type.CHANNEL_RIGHT);
+            grid[3][col] = new Cell(isTransitColumn ? transitType : Cell.Type.DOCK);
         }
 
         return grid;
