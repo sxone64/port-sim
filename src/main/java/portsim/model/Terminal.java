@@ -17,7 +17,7 @@ public final class Terminal implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private static final String SHIP_NOT_FOUND = "Specified ship is not part of this terminal";
+    private static final String SHIP_NOT_FOUND = "Specified ship is not part of terminal ID %d";
 
     private static final List<Cell.Type> CHANNEL_MASK = List.of(CHANNEL_LEFT, CHANNEL_RIGHT);
     private static final List<Cell.Type> TRANSIT_MASK = List.of(TRANSIT_DOWN, TRANSIT_UP);
@@ -118,7 +118,7 @@ public final class Terminal implements Serializable {
         var position = shipPositions.remove(ship);
 
         if (!isRegistered && position == null)
-            throw new NotFoundException(SHIP_NOT_FOUND);
+            throw new NotFoundException(SHIP_NOT_FOUND.formatted(idTerminal));
 
         if (position != null)
             getCell(position).setOccupant(null);
@@ -128,7 +128,7 @@ public final class Terminal implements Serializable {
         var index = ships.indexOf(oldShip);
 
         if (index == -1)
-            throw new NotFoundException(SHIP_NOT_FOUND);
+            throw new NotFoundException(SHIP_NOT_FOUND.formatted(idTerminal));
 
         ships.set(index, newShip);
 
@@ -154,7 +154,7 @@ public final class Terminal implements Serializable {
         var from = shipPositions.get(ship);
 
         if (from == null)
-            throw new NotFoundException(SHIP_NOT_FOUND);
+            throw new NotFoundException(SHIP_NOT_FOUND.formatted(idTerminal));
 
         var toCell = getCell(to);
         checkNotOccupied(toCell, to);
@@ -223,7 +223,7 @@ public final class Terminal implements Serializable {
 
     private Cell getCell(Position position) {
         if (!isInBounds(position))
-            throw new NotFoundException("Position %s is not part of this terminal".formatted(position));
+            throw new NotFoundException("Position %s is not part of terminal ID %d".formatted(position, idTerminal));
 
         return grid[position.row()][position.column()];
     }
@@ -235,12 +235,13 @@ public final class Terminal implements Serializable {
 
     private void checkNotOccupied(@NotNull Cell cell, @NotNull Position position) {
         if (cell.isOccupied())
-            throw new IllegalStateException("Cell %s is already occupied by a ship".formatted(position));
+            throw new IllegalStateException(
+                    "Cell %s of terminal ID %d is already occupied by a ship".formatted(position, idTerminal));
     }
 
     private void checkShipRegistered(Ship ship) {
         if (!ships.contains(ship))
             throw new IllegalStateException(
-                    "Specified ship needs to be registered in order for it to dock at this terminal");
+                    "Ship needs to be registered in order for it to dock at terminal ID %d".formatted(idTerminal));
     }
 }
