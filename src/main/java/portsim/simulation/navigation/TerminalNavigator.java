@@ -3,7 +3,12 @@ package portsim.simulation.navigation;
 import org.jspecify.annotations.NullMarked;
 import portsim.model.Position;
 import portsim.model.Terminal;
+import portsim.model.ship.Ship;
 import portsim.simulation.thread.ShipThread.Goal;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static portsim.model.Cell.Type.*;
 
@@ -11,16 +16,188 @@ import static portsim.model.Cell.Type.*;
 public final class TerminalNavigator {
     private final Terminal terminal;
 
+    // These constants define the channel bounds that are used to determine if overtaking is possible or not
+    private final int MIN_RETURN_COLUMN, MAX_RETURN_COLUMN;
+
+    // Holds info about original lane returning positions for ships that are overtaking
+    private final Map<Ship, Position> pendingReturn = new ConcurrentHashMap<>();
+
     public TerminalNavigator(Terminal terminal) {
         this.terminal = terminal;
+
+        MIN_RETURN_COLUMN = terminal.getTransitColumns();
+        MAX_RETURN_COLUMN = terminal.getTotalColumns() - 1;
     }
 
-    // Proposes the next action based on ship's current position and goal
-    public NavigationAction nextStep(Position current, Goal goal) {
-        return switch (goal) {
+    public NavigationAction nextStep(Ship ship, Position current, Goal goal) {
+        var returnStep = nextReturnStep(ship, current);
+
+        if (returnStep.isPresent())
+            return returnStep.get();
+
+        var action = switch (goal) {
             case ENTER_AND_DOCK -> nextStepEntering(current);
             case UNDOCK_AND_EXIT -> nextStepExiting(current);
         };
+
+        // We find out here if the ship needs to overtake or not
+        if (action instanceof NavigationAction.Move(Position position) && !pendingReturn.containsKey(ship)) {
+            var overtake = nextOvertakeStep(ship, current, position);
+
+            if (overtake.isPresent())
+                return new NavigationAction.Move(overtake.get());
+        }
+
+        return action;
+    }
+
+    private Optional<NavigationAction> nextReturnStep(Ship ship, Position current) {
+        var returnPos = pendingReturn.get(ship);
+
+        // It's determined that the ship isn't overtaking, so continue with normal lane movement
+        if (returnPos == null)
+            return Optional.empty();
+
+        var currentType = terminal.getCellType(current);
+        var isAdjacentLeft = returnPos.column() == current.column() - 1;
+        var isAdjacentRight = returnPos.column() == current.column() + 1;
+
+        /*
+            If the return position is adjacent column-wise to the current position
+            and the return position isn't occupied, then next step is to finish the overtaking
+            by moving to the return position
+         */
+        if ((isAdjacentLeft || isAdjacentRight) && !terminal.isOccupied(returnPos))
+            return Optional.of(new NavigationAction.Move(returnPos));
+
+        int direction;
+        if (currentType == CHANNEL_LEFT && isAdjacentRight && current.column() < MAX_RETURN_COLUMN)
+            direction = 1;
+        else if (currentType == CHANNEL_RIGHT && isAdjacentLeft && current.column() > MIN_RETURN_COLUMN)
+            direction = -1;
+
+        /*
+            Occupied return position is further down the original lane, or we've hit the channel boundary.
+            Ship rotates in overtaking lane and continues moving normally alongside that lane
+         */
+        else return Optional.empty();
+
+        var position = new Position(current.row(), current.column() + direction);
+
+        /*
+            Because the ship is going to move by one cell on the overtake lane,
+            we need to update the return position accordingly
+         */
+        updatePendingReturn(ship, current, returnPos);
+
+        return Optional.of(new NavigationAction.Move(position));
+    }
+
+    /*
+        Determines if the ship should overtake based on its current and desired positions.
+        If desired position isn't occupied, no overtaking is needed
+     */
+    private Optional<Position> nextOvertakeStep(Ship ship, Position from, Position to) {
+        if (!terminal.isOccupied(to))
+            return Optional.empty();
+
+        var overtake = computeOvertakePos(from, to);
+
+        if (overtake.isEmpty() || terminal.isOccupied(overtake.get()))
+            return Optional.empty();
+
+        var returnPos = computeReturnPos(from, to);
+
+        if (returnPos.isEmpty())
+            returnPos = computeFallbackPos(overtake.get(), from);
+
+        returnPos.ifPresent(position -> pendingReturn.put(ship, position));
+
+        return overtake;
+    }
+
+    private void updatePendingReturn(Ship ship, Position current, Position oldReturn) {
+        var newReturn = shiftReturnPos(current, oldReturn);
+
+        if (newReturn.isPresent())
+            pendingReturn.put(ship, newReturn.get());
+
+        else {
+            var fallback = computeFallbackPos(current, oldReturn);
+
+            if (fallback.isPresent())
+                pendingReturn.put(ship, fallback.get());
+
+            else
+                pendingReturn.remove(ship);
+        }
+    }
+
+    /*
+        Return a new return position that retains the previous current/return position gap
+        or nothing if the shift goes out of channel bounds
+     */
+    private Optional<Position> shiftReturnPos(Position current, Position oldReturn) {
+        var delta = oldReturn.column() - current.column();
+        var newReturnColumn = oldReturn.column() + delta;
+
+        if (newReturnColumn < MIN_RETURN_COLUMN || newReturnColumn > MAX_RETURN_COLUMN)
+            return Optional.empty();
+
+        return Optional.of(new Position(oldReturn.row(), newReturnColumn));
+    }
+
+    /*
+        Return a new return position to which an overtaking ship has to backtrack because overtaking isn't possible
+        or nothing if there's not a single free cell in channel bounds to backtrack to
+     */
+    private Optional<Position> computeFallbackPos(Position current, Position oldReturn) {
+        var targetRow = oldReturn.row();
+        var currentLaneType = terminal.getCellType(current);
+
+        var delta = (currentLaneType == CHANNEL_RIGHT) ? 1 : -1;
+        var targetColumn = current.column() + delta;
+
+        while (targetColumn >= MIN_RETURN_COLUMN && targetColumn <= MAX_RETURN_COLUMN) {
+            var position = new Position(targetRow, targetColumn);
+
+            if (!terminal.isOccupied(position))
+                return Optional.of(position);
+
+            targetColumn += delta;
+        }
+
+        return Optional.empty();
+    }
+
+    // Overtake position is always adjacent to desired position row-wise
+    private Optional<Position> computeOvertakePos(Position from, Position to) {
+        if (from.row() != to.row() || Math.abs(from.column() - to.column()) != 1)
+            return Optional.empty();
+
+        if (to.column() < MIN_RETURN_COLUMN || to.column() > MAX_RETURN_COLUMN)
+            return Optional.empty();
+
+        return switch (from.row()) {
+            case 1 -> Optional.of(new Position(2, to.column()));
+            case 2 -> Optional.of(new Position(1, to.column()));
+            default -> Optional.empty();
+        };
+    }
+
+    /*
+        Used to determine the initial return position for an overtaking maneuver.
+        It's calculated based on current/desired position gap
+        (calculated position needs to be inside the channel bounds)
+     */
+    private Optional<Position> computeReturnPos(Position from, Position to) {
+        var delta = to.column() - from.column();
+        var returnColumn = to.column() + delta;
+
+        if (returnColumn < MIN_RETURN_COLUMN || returnColumn > MAX_RETURN_COLUMN)
+            return Optional.empty();
+
+        return Optional.of(new Position(from.row(), returnColumn));
     }
 
     private NavigationAction nextStepEntering(Position current) {
