@@ -3,12 +3,16 @@ package portsim.ui.viewmodel;
 import javafx.beans.property.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 import portsim.io.AppResources;
 import portsim.model.ship.ContainerShip;
 import portsim.model.ship.Cruiser;
 import portsim.model.ship.Ship;
 import portsim.model.ship.Tanker;
-import portsim.model.ship.factory.ShipBuilder;
+import portsim.model.ship.builder.ContainerShipBuilder;
+import portsim.model.ship.builder.CruiserBuilder;
+import portsim.model.ship.builder.ShipBuilder;
+import portsim.model.ship.builder.TankerBuilder;
 import portsim.service.ImoConflictException;
 import portsim.service.PortService;
 import portsim.util.FieldValidationException;
@@ -144,7 +148,7 @@ public final class ShipFormViewModel {
         updateShipProperty.setValue(updateShip);
     }
 
-    private Ship buildShip(Class<? extends Ship> type) throws FieldValidationException {
+    private @NonNull Ship buildShip(Class<? extends Ship> type) throws FieldValidationException {
         var validator = FieldValidator.getInstance();
 
         var name = validator.requireNotBlank("Name", nameProperty.getValue());
@@ -163,18 +167,22 @@ public final class ShipFormViewModel {
                 .speed(speed)
                 .photoPath(photoPath);
 
-        if (Cruiser.class.isAssignableFrom(type)) {
-            var numPassengers = validator.requireValidNumPassengers("Number of passengers",
-                    numPassengersProperty.getValue());
-            builder.numPassengers(numPassengers);
-        }
-        else if (Tanker.class.isAssignableFrom(type)) {
-            var volume = validator.requireValidVolume("Volume", volumeProperty.getValue());
-            builder.volume(volume);
-        }
-        else if (ContainerShip.class.isAssignableFrom(type)) {
-            var capacity = validator.requireValidCapacity("Capacity", capacityProperty.getValue());
-            builder.capacity(capacity);
+        switch (builder) {
+            case ContainerShipBuilder<?> b -> {
+                var capacity = validator.requireValidCapacity("Capacity", capacityProperty.getValue());
+                b.capacity(capacity);
+            }
+            case CruiserBuilder<?> b -> {
+                var numPassengers = validator.requireValidNumPassengers("Number of passengers",
+                        numPassengersProperty.getValue());
+                b.numPassengers(numPassengers);
+            }
+            case TankerBuilder<?> b -> {
+                var volume = validator.requireValidVolume("Volume", volumeProperty.getValue());
+                b.volume(volume);
+            }
+            default -> throw new IllegalStateException(
+                    "Type %s doesn't have a builder implementation".formatted(type.getSimpleName()));
         }
 
         return builder.build();

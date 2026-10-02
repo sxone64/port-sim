@@ -12,8 +12,7 @@ import portsim.model.ship.ContainerShip;
 import portsim.model.ship.Cruiser;
 import portsim.model.ship.Ship;
 import portsim.model.ship.Tanker;
-import portsim.model.ship.factory.ShipCategory;
-import portsim.model.ship.state.impl.*;
+import portsim.model.ship.ShipTypes;
 import portsim.ui.ShipTypeLabels;
 import portsim.ui.viewmodel.ShipFormViewModel;
 
@@ -63,7 +62,7 @@ public final class ShipFormController {
 
         if (updateShip != null) {
             preselect = updateShip.getClass();
-            var toggle = ShipCategory.of(preselect) == ShipCategory.STATE
+            var toggle = ShipTypes.isState(preselect)
                     ? stateToggleBtn
                     : commercialToggleBtn;
             toggle.setSelected(true);
@@ -136,11 +135,11 @@ public final class ShipFormController {
     }
 
     private void updateShipTypeCombo(Class<? extends Ship> preselect) {
-        var category = commercialToggleBtn.isSelected()
-                ? ShipCategory.COMMERCIAL
-                : ShipCategory.STATE;
+        var types = commercialToggleBtn.isSelected()
+                ? ShipTypes.commercial()
+                : ShipTypes.state();
 
-        shipTypeCombo.getItems().setAll(category.types());
+        shipTypeCombo.getItems().setAll(types);
 
         if (preselect != null)
             shipTypeCombo.getSelectionModel().select(preselect);
