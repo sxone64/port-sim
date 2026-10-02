@@ -13,7 +13,7 @@ public final class AppResources {
     private final URL ADMIN_FXML = requireResource("/fxml/admin.fxml");
     private final URL SHIP_FORM_FXML = requireResource("/fxml/ship-form.fxml");
 
-    private final Path DEFAULT_PHOTO_PATH = resourcePath("/images/default.png");
+    private final Path DEFAULT_PHOTO_PATH = defaultPhotoPath();
 
     public static AppResources getInstance() {
         return INSTANCE;
@@ -45,11 +45,11 @@ public final class AppResources {
         return resource;
     }
 
-    private Path resourcePath(String path) {
+    private Path defaultPhotoPath() {
         try {
-            return Path.of(requireResource(path).toURI());
+            return Path.of(requireResource("/images/default.png").toURI());
         } catch (Exception e) {
-            throw new IllegalStateException("Couldn't resolve resource path", e);
+            throw new IllegalStateException("Couldn't resolve default photo path", e);
         }
     }
 }
