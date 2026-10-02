@@ -1,22 +1,22 @@
 package portsim.model.ship;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.nio.file.Path;
 
+@NullMarked
 public abstract class Ship implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     protected final String name, engineNumber, regNumber;
     protected final int imo; // Uniquely identifies the ship
     protected final int speed;
     protected final String photoPath;
 
-    public Ship(@NotNull String name, @NotNull String engineNumber, @NotNull String regNumber,
-                int imo, int speed, @NotNull Path photoPath) {
+    public Ship(String name, String engineNumber, String regNumber,
+                int imo, int speed, Path photoPath) {
         this.name = name;
         this.engineNumber = engineNumber;
         this.regNumber = regNumber;

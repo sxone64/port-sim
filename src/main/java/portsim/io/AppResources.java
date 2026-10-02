@@ -1,11 +1,12 @@
 package portsim.io;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.MissingResourceException;
 
+@NullMarked
 public final class AppResources {
     private static final AppResources INSTANCE = new AppResources();
 
@@ -20,19 +21,19 @@ public final class AppResources {
 
     private AppResources() {}
 
-    public @NotNull URL getAdminFxml() {
+    public URL getAdminFxml() {
         return ADMIN_FXML;
     }
 
-    public @NotNull URL getShipFormFxml() {
+    public URL getShipFormFxml() {
         return SHIP_FORM_FXML;
     }
 
-    public @NotNull Path getDefaultPhotoPath() {
+    public Path getDefaultPhotoPath() {
         return DEFAULT_PHOTO_PATH;
     }
 
-    private @NotNull URL requireResource(String path) {
+    private URL requireResource(String path) {
         var resource = AppResources.class.getResource(path);
 
         if (resource == null)
@@ -44,7 +45,7 @@ public final class AppResources {
         return resource;
     }
 
-    private @NotNull Path resourcePath(String path) {
+    private Path resourcePath(String path) {
         try {
             return Path.of(requireResource(path).toURI());
         } catch (Exception e) {

@@ -1,5 +1,6 @@
 package portsim.ui;
 
+import org.jspecify.annotations.NullMarked;
 import portsim.model.ship.ContainerShip;
 import portsim.model.ship.Cruiser;
 import portsim.model.ship.Ship;
@@ -8,6 +9,7 @@ import portsim.model.ship.state.impl.*;
 
 import java.util.Map;
 
+@NullMarked
 public final class ShipTypeLabels {
     private static final Map<Class<? extends Ship>, String> LABELS = Map.ofEntries(
             Map.entry(CustomsCruiser.class, "Customs cruiser"),

@@ -1,7 +1,10 @@
 package portsim.io;
 
+import org.jspecify.annotations.NullMarked;
+
 import java.util.Properties;
 
+@NullMarked
 public final class AppProperties {
     private static final AppProperties INSTANCE = new AppProperties();
 

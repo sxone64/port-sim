@@ -1,7 +1,9 @@
 package portsim.simulation.navigation;
 
+import org.jspecify.annotations.NullMarked;
 import portsim.model.Position;
 
+@NullMarked
 public sealed interface NavigationAction {
     // Indicates a ship moving to a new position inside a single terminal
     record Move(Position destination) implements NavigationAction {}

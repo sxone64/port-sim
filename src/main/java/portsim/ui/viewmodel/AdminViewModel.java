@@ -3,8 +3,8 @@ package portsim.ui.viewmodel;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import portsim.model.Terminal;
 import portsim.model.ship.Ship;
 import portsim.service.PortService;
@@ -12,6 +12,7 @@ import portsim.service.PortService;
 import java.util.List;
 import java.util.Optional;
 
+@NullMarked
 public final class AdminViewModel {
     private final IntegerProperty totalShipsProperty = new SimpleIntegerProperty(0);
     private final IntegerProperty totalFreeDocksProperty = new SimpleIntegerProperty(0);
@@ -27,7 +28,7 @@ public final class AdminViewModel {
 
     private final PortService portService = PortService.getInstance();
 
-    private Integer idTerminal;
+    @Nullable private Integer idTerminal;
 
     public ReadOnlyIntegerProperty totalShipsProperty() {
         return totalShipsProperty;
@@ -57,11 +58,11 @@ public final class AdminViewModel {
         return terminalShips;
     }
 
-    public @NotNull @Unmodifiable List<Terminal> getTerminals() {
+    public List<Terminal> getTerminals() {
         return portService.getTerminals();
     }
 
-    public @NotNull Optional<Integer> getIdTerminal() {
+    public Optional<Integer> getIdTerminal() {
         return Optional.ofNullable(idTerminal);
     }
 

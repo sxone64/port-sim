@@ -1,12 +1,13 @@
 package portsim.simulation.navigation;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import portsim.model.Position;
 import portsim.model.Terminal;
 import portsim.simulation.thread.ShipThread.Goal;
 
 import static portsim.model.Cell.Type.*;
 
+@NullMarked
 public final class TerminalNavigator {
     private final Terminal terminal;
 
@@ -15,14 +16,14 @@ public final class TerminalNavigator {
     }
 
     // Proposes the next action based on ship's current position and goal
-    public @NotNull NavigationAction nextStep(@NotNull Position current, @NotNull Goal goal) {
+    public NavigationAction nextStep(Position current, Goal goal) {
         return switch (goal) {
             case ENTER_AND_DOCK -> nextStepEntering(current);
             case UNDOCK_AND_EXIT -> nextStepExiting(current);
         };
     }
 
-    private @NotNull NavigationAction nextStepEntering(Position current) {
+    private NavigationAction nextStepEntering(Position current) {
         var lastColumn = terminal.getTotalColumns() - 1;
         var cellType = terminal.getCellType(current);
 
@@ -94,7 +95,7 @@ public final class TerminalNavigator {
     }
 
     // Mostly the same ship movement applies as when the ship's entering
-    private @NotNull NavigationAction nextStepExiting(Position current) {
+    private NavigationAction nextStepExiting(Position current) {
         var lastColumn = terminal.getTotalColumns() - 1;
         var cellType = terminal.getCellType(current);
 

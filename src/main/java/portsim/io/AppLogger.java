@@ -1,5 +1,7 @@
 package portsim.io;
 
+import org.jspecify.annotations.NullMarked;
+
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
@@ -10,6 +12,7 @@ import java.util.logging.SimpleFormatter;
 
 import static java.util.logging.Level.*;
 
+@NullMarked
 public final class AppLogger {
     private static final Logger LOGGER = Logger.getLogger(AppLogger.class.getName());
     private static final AppLogger INSTANCE = new AppLogger();

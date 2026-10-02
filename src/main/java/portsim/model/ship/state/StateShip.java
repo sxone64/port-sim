@@ -1,7 +1,8 @@
 package portsim.model.ship.state;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public interface StateShip {
     enum Priority {
         HIGH,
@@ -11,5 +12,5 @@ public interface StateShip {
 
     boolean isSirenOn();
     void setSirenOn(boolean sirenOn);
-    @NotNull Priority getPriority();
+    Priority getPriority();
 }

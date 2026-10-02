@@ -1,6 +1,5 @@
 package portsim.model.ship;
 
-import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import portsim.model.ship.state.impl.*;
 
@@ -25,11 +24,11 @@ public final class ShipTypes {
 
     private ShipTypes() {}
 
-    public static @Unmodifiable List<Class<? extends Ship>> commercial() {
+    public static List<Class<? extends Ship>> commercial() {
         return List.copyOf(COMMERCIAL);
     }
 
-    public static @Unmodifiable List<Class<? extends Ship>> state() {
+    public static List<Class<? extends Ship>> state() {
         return List.copyOf(STATE);
     }
 

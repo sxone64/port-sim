@@ -1,20 +1,20 @@
 package portsim.model.ship.state.impl;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import portsim.model.ship.Tanker;
 import portsim.model.ship.state.Customs;
 
 import java.io.Serial;
 import java.nio.file.Path;
 
+@NullMarked
 public final class CustomsTanker extends Tanker implements Customs {
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private boolean sirenOn;
 
-    public CustomsTanker(@NotNull String name, @NotNull String engineNumber, @NotNull String regNumber,
-                         int imo, int speed, @NotNull Path photoPath, double volume) {
+    public CustomsTanker(String name, String engineNumber, String regNumber,
+                         int imo, int speed, Path photoPath, double volume) {
         super(name, engineNumber, regNumber, imo, speed, photoPath, volume);
     }
 

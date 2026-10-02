@@ -1,12 +1,13 @@
 package portsim.io;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import portsim.model.Port;
 import portsim.model.Terminal;
 
 import java.io.*;
 import java.util.ArrayList;
 
+@NullMarked
 public final class PortPersistence {
     private static final PortPersistence INSTANCE = new PortPersistence();
 
@@ -32,7 +33,7 @@ public final class PortPersistence {
         return createFresh();
     }
 
-    public void savePort(@NotNull Port port) {
+    public void savePort(Port port) {
         try (var out = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
             out.writeObject(port);
         } catch (Exception e) {
@@ -40,7 +41,7 @@ public final class PortPersistence {
         }
     }
 
-    private @NotNull Port createFresh() {
+    private Port createFresh() {
         var properties = AppProperties.getInstance();
         var numTerminals = properties.getNumTerminals();
 

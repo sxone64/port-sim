@@ -1,16 +1,17 @@
 package portsim.model.ship.state;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import portsim.io.PursuitFile;
 
 import static portsim.model.ship.state.StateShip.Priority.MEDIUM;
 
+@NullMarked
 public interface CoastGuard extends StateShip {
-    default @NotNull PursuitFile getPursuitFile() {
+    default PursuitFile getPursuitFile() {
         return PursuitFile.getInstance();
     }
 
-    default @NotNull Priority getPriority() {
+    default Priority getPriority() {
         return MEDIUM;
     }
 }

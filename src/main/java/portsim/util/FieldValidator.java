@@ -1,12 +1,13 @@
 package portsim.util;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Function;
 
+@NullMarked
 public final class FieldValidator {
     private static final FieldValidator INSTANCE = new FieldValidator();
 
@@ -22,16 +23,14 @@ public final class FieldValidator {
 
     private FieldValidator() {}
 
-    public @NotNull String requireNotBlank(@NotNull String field,
-                                           @Nullable String value) throws FieldValidationException {
+    public String requireNotBlank(String field, @Nullable String value) throws FieldValidationException {
         if (value == null || value.isBlank())
             throw new FieldValidationException("%s cannot be blank".formatted(field));
 
         return value;
     }
 
-    public int requirePositiveInt(@NotNull String field,
-                                  @Nullable String value) throws FieldValidationException {
+    public int requirePositiveInt(String field, @Nullable String value) throws FieldValidationException {
         return requirePositiveNumber(
                 field,
                 value,
@@ -39,8 +38,7 @@ public final class FieldValidator {
                 "%s must be a valid positive whole number".formatted(field));
     }
 
-    public double requirePositiveDouble(@NotNull String field,
-                                        @Nullable String value) throws FieldValidationException {
+    public double requirePositiveDouble(String field, @Nullable String value) throws FieldValidationException {
         return requirePositiveNumber(
                 field,
                 value,
@@ -48,8 +46,7 @@ public final class FieldValidator {
                 "%s must be a valid positive decimal number".formatted(field));
     }
 
-    public int requireValidImo(@NotNull String field,
-                               @Nullable String value) throws FieldValidationException {
+    public int requireValidImo(String field, @Nullable String value) throws FieldValidationException {
         var notBlank = requireNotBlank(field, value);
         int imo = requirePositiveInt(field, notBlank);
 
@@ -59,42 +56,35 @@ public final class FieldValidator {
         return imo;
     }
 
-    public @NotNull Path requireValidPath(@NotNull String field,
-                                          @Nullable Path path) throws FieldValidationException {
+    public Path requireValidPath(String field, @Nullable Path path) throws FieldValidationException {
         if (path == null || !Files.exists(path))
             throw new FieldValidationException("%s doesn't exist".formatted(field));
 
         return path;
     }
 
-    public int requireValidSpeed(@NotNull String field,
-                                 int speed) throws FieldValidationException {
+    public int requireValidSpeed(String field, int speed) throws FieldValidationException {
         return requireInRange(field, speed, MIN_SPEED, MAX_SPEED);
     }
 
-    public int requireValidCapacity(@NotNull String field,
-                                    @Nullable String capacity) throws FieldValidationException {
+    public int requireValidCapacity(String field, @Nullable String capacity) throws FieldValidationException {
         var parsed = requirePositiveInt(field, capacity);
         return requireInRange(field, parsed, MIN_CAPACITY, MAX_CAPACITY);
     }
 
-    public int requireValidNumPassengers(@NotNull String field,
-                                         @Nullable String numPassengers) throws FieldValidationException {
+    public int requireValidNumPassengers(String field, @Nullable String numPassengers) throws FieldValidationException {
         var parsed = requirePositiveInt(field, numPassengers);
         return requireInRange(field, parsed, MIN_NUM_PASSENGERS, MAX_NUM_PASSENGERS);
     }
 
-    public double requireValidVolume(@NotNull String field,
-                                     @Nullable String volume) throws FieldValidationException {
+    public double requireValidVolume(String field, @Nullable String volume) throws FieldValidationException {
         var parsed = requirePositiveDouble(field, volume);
         return requireInRange(field, parsed, MIN_VOLUME, MAX_VOLUME);
     }
 
-    private @NotNull <T extends Number> T requirePositiveNumber(
-            @NotNull String field,
-            @Nullable String value,
-            @NotNull Function<String, T> parser,
-            @NotNull String parseFailedMessage) throws FieldValidationException {
+    private <T extends Number> T requirePositiveNumber(
+            String field, @Nullable String value,
+            Function<String, T> parser, String parseFailedMessage) throws FieldValidationException {
         requireNotBlank(field, value);
 
         try {
@@ -109,11 +99,8 @@ public final class FieldValidator {
         }
     }
 
-    private <T extends Number> @NotNull T requireInRange(
-            @NotNull String field,
-            @NotNull T value,
-            int min, int max) throws FieldValidationException {
-
+    private <T extends Number> T requireInRange(
+            String field, T value, int min, int max) throws FieldValidationException {
         if (value.doubleValue() < min || value.doubleValue() > max)
             throw new FieldValidationException(
                     "%s must be between %,d and %,d".formatted(field, min, max));

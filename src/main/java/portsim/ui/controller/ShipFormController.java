@@ -7,7 +7,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import portsim.model.ship.ContainerShip;
 import portsim.model.ship.Cruiser;
 import portsim.model.ship.Ship;
@@ -18,6 +19,7 @@ import portsim.ui.viewmodel.ShipFormViewModel;
 
 import static javafx.scene.control.Alert.AlertType.ERROR;
 
+@NullMarked
 public final class ShipFormController {
     @FXML private ToggleButton commercialToggleBtn;
     @FXML private ToggleGroup shipTypeGroup;
@@ -38,10 +40,11 @@ public final class ShipFormController {
     @FXML private Button cancelBtn;
     @FXML private Button confirmBtn;
 
+    @SuppressWarnings("NotNullFieldNotInitialized")
     private ShipFormViewModel viewModel;
 
     // This method is called after the FXML resource is loaded
-    public void initialize(@NotNull ShipFormViewModel viewModel) {
+    public void initialize(ShipFormViewModel viewModel) {
         this.viewModel = viewModel;
 
         viewModel.setOnConfirmFailed(message -> {
@@ -110,7 +113,7 @@ public final class ShipFormController {
             protected void updateItem(Class<? extends Ship> item, boolean empty) {
                 super.updateItem(item, empty);
 
-                if (empty || item == null) setText(null);
+                if (empty) setText(null);
                 else setText(getTypeName(item));
             }
         });
@@ -121,20 +124,18 @@ public final class ShipFormController {
             protected void updateItem(Class<? extends Ship> item, boolean empty) {
                 super.updateItem(item, empty);
 
-                if (empty || item == null) setText(null);
+                if (empty) setText(null);
                 else setText(getTypeName(item));
             }
         });
 
         shipTypeCombo.getSelectionModel().selectedItemProperty().addListener(
-                (_, _, newType) -> {
-                    if (newType != null)
-                        updateSpecificFields(newType);
-                }
+                (_, _, newType) ->
+                        updateSpecificFields(newType)
         );
     }
 
-    private void updateShipTypeCombo(Class<? extends Ship> preselect) {
+    private void updateShipTypeCombo(@Nullable Class<? extends Ship> preselect) {
         var types = commercialToggleBtn.isSelected()
                 ? ShipTypes.commercial()
                 : ShipTypes.state();
@@ -151,7 +152,7 @@ public final class ShipFormController {
         return ShipTypeLabels.of(type);
     }
 
-    private void updateSpecificFields(@NotNull Class<? extends Ship> type) {
+    private void updateSpecificFields(Class<? extends Ship> type) {
         specificFieldsVBox.getChildren().clear();
         var children = specificFieldsVBox.getChildren();
 
@@ -176,7 +177,7 @@ public final class ShipFormController {
         Constructs a new VBox containing a Label and a TextField.
         This method also performs bidirectional binding of the TextField with a property from the view model
      */
-    private @NotNull VBox buildSpecificField(String labelText, StringProperty property) {
+    private VBox buildSpecificField(String labelText, StringProperty property) {
         var label = new Label(labelText);
 
         var textField = new TextField();

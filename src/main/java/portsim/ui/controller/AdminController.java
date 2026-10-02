@@ -8,7 +8,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import portsim.io.AppResources;
 import portsim.model.ship.Ship;
 import portsim.ui.ShipTypeLabels;
@@ -20,6 +20,7 @@ import java.io.IOException;
 import static javafx.geometry.Pos.CENTER;
 import static javafx.stage.Modality.APPLICATION_MODAL;
 
+@NullMarked
 public final class AdminController {
     private static final String TERMINAL_NOT_FOUND = "Operation requires a terminal to proceed";
     private static final String FXML_LOAD_FAILED = "Failed to load the FXML resource";
@@ -56,7 +57,7 @@ public final class AdminController {
         setupTable();
     }
 
-    private @NotNull ToggleButton createTerminalButton(int idTerminal) {
+    private ToggleButton createTerminalButton(int idTerminal) {
         var toggleButton = new ToggleButton();
 
         toggleButton.setText("Terminal %d".formatted(idTerminal));

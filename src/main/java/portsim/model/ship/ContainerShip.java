@@ -1,18 +1,18 @@
 package portsim.model.ship;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.io.Serial;
 import java.nio.file.Path;
 
+@NullMarked
 public class ContainerShip extends Ship {
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private final int capacity; // TEU (Twenty-foot Equivalent Unit) - whole number of containers
 
-    public ContainerShip(@NotNull String name, @NotNull String engineNumber, @NotNull String regNumber,
-                         int imo, int speed, @NotNull Path photoPath, int capacity) {
+    public ContainerShip(String name, String engineNumber, String regNumber,
+                         int imo, int speed, Path photoPath, int capacity) {
         super(name, engineNumber, regNumber, imo, speed, photoPath);
         this.capacity = capacity;
     }

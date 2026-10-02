@@ -1,7 +1,6 @@
 package portsim.model;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NullMarked;
 import portsim.model.ship.Ship;
 import portsim.model.ship.state.StateShip;
 
@@ -13,9 +12,9 @@ import java.util.*;
 
 import static portsim.model.Cell.Type.*;
 
+@NullMarked
 public final class Terminal implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private static final String SHIP_NOT_FOUND = "Specified ship is not part of terminal ID %d";
 
@@ -43,7 +42,7 @@ public final class Terminal implements Serializable {
     }
 
     @Serial
-    private void readObject(@NotNull ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         shipPositions = buildShipPositions();
     }
@@ -52,7 +51,7 @@ public final class Terminal implements Serializable {
         return idTerminal;
     }
 
-    public @NotNull @Unmodifiable List<Ship> getShips() {
+    public List<Ship> getShips() {
         return List.copyOf(ships);
     }
 
@@ -70,11 +69,11 @@ public final class Terminal implements Serializable {
         return dockPositions.size() - ships.size();
     }
 
-    public @NotNull Optional<Position> getShipPosition(@NotNull Ship ship) {
+    public Optional<Position> getShipPosition(Ship ship) {
         return Optional.ofNullable(shipPositions.get(ship));
     }
 
-    public @NotNull @Unmodifiable List<Position> getDockPositions() {
+    public List<Position> getDockPositions() {
         return List.copyOf(dockPositions);
     }
 
@@ -86,11 +85,11 @@ public final class Terminal implements Serializable {
         return TRANSIT_COLUMNS;
     }
 
-    public @NotNull Cell.Type getCellType(@NotNull Position position) {
+    public Cell.Type getCellType(Position position) {
         return getCell(position).getType();
     }
 
-    public boolean isOccupied(@NotNull Position position) {
+    public boolean isOccupied(Position position) {
         return getCell(position).isOccupied();
     }
 
@@ -100,7 +99,7 @@ public final class Terminal implements Serializable {
         to dock at the terminal.
         Unregistered ships can be part of terminal's grid as long as they don't attempt to dock at a DOCK cell
      */
-    public void registerShip(@NotNull Ship ship) {
+    public void registerShip(Ship ship) {
         if (getFreeDocks() <= 0)
             throw new TerminalFullException(idTerminal);
 
@@ -112,7 +111,7 @@ public final class Terminal implements Serializable {
         If the ship is registered, it's unregistered from the terminal.
         If the ship is positioned somewhere on terminal's grid, it's removed
      */
-    public void removeShip(@NotNull Ship ship) {
+    public void removeShip(Ship ship) {
         var isRegistered = ships.remove(ship);
         var position = shipPositions.remove(ship);
 
@@ -123,7 +122,7 @@ public final class Terminal implements Serializable {
             getCell(position).setOccupant(null);
     }
 
-    public void updateShip(@NotNull Ship oldShip, @NotNull Ship newShip) {
+    public void updateShip(Ship oldShip, Ship newShip) {
         var index = ships.indexOf(oldShip);
 
         if (index == -1)
@@ -138,7 +137,7 @@ public final class Terminal implements Serializable {
         }
     }
 
-    public void placeShip(@NotNull Ship ship, @NotNull Position position) {
+    public void placeShip(Ship ship, Position position) {
         var cell = getCell(position);
         checkNotOccupied(cell, position);
 
@@ -149,7 +148,7 @@ public final class Terminal implements Serializable {
         shipPositions.put(ship, position);
     }
 
-    public void moveShip(@NotNull Ship ship, @NotNull Position to) {
+    public void moveShip(Ship ship, Position to) {
         var from = shipPositions.get(ship);
 
         if (from == null)
@@ -166,7 +165,7 @@ public final class Terminal implements Serializable {
         shipPositions.put(ship, to);
     }
 
-    private Cell @NotNull [][] initGrid() {
+    private Cell [][] initGrid() {
         var grid = new Cell[GRID_ROWS][GRID_COLUMNS];
 
         for (int col = 0; col < GRID_COLUMNS; col++) {
@@ -182,7 +181,7 @@ public final class Terminal implements Serializable {
         return grid;
     }
 
-    private @NotNull List<Position> findDockPositions() {
+    private List<Position> findDockPositions() {
         var dockPositions = new ArrayList<Position>();
 
         for (var row = 0; row < GRID_ROWS; row++)
@@ -193,7 +192,7 @@ public final class Terminal implements Serializable {
         return dockPositions;
     }
 
-    private @NotNull Map<Ship, Position> buildShipPositions() {
+    private Map<Ship, Position> buildShipPositions() {
         var positions = new HashMap<Ship, Position>();
 
         for (var row = 0; row < GRID_ROWS; row++)
@@ -214,12 +213,12 @@ public final class Terminal implements Serializable {
         return grid[position.row()][position.column()];
     }
 
-    private boolean isInBounds(@NotNull Position position) {
+    private boolean isInBounds(Position position) {
         return position.row() >= 0 && position.row() < GRID_ROWS
                 && position.column() >= 0 && position.column() < GRID_COLUMNS;
     }
 
-    private void checkNotOccupied(@NotNull Cell cell, @NotNull Position position) {
+    private void checkNotOccupied(Cell cell, Position position) {
         if (cell.isOccupied())
             throw new IllegalStateException(
                     "Cell %s of terminal ID %d is already occupied by a ship".formatted(position, idTerminal));

@@ -1,18 +1,18 @@
 package portsim.model;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import portsim.model.ship.Ship;
 
 import java.io.Serial;
 import java.io.Serializable;
 
+@NullMarked
 public final class Cell implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private final Type type;
-    private Ship occupant;
+    @Nullable private Ship occupant;
 
     public enum Type {
         TRANSIT_DOWN, TRANSIT_UP,
@@ -21,11 +21,11 @@ public final class Cell implements Serializable {
         CHANNEL_RIGHT
     }
 
-    public Cell(@NotNull Type type) {
+    public Cell(Type type) {
         this.type = type;
     }
 
-    public @NotNull Type getType() {
+    public Type getType() {
         return type;
     }
 

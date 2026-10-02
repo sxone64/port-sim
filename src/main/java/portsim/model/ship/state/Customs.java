@@ -1,11 +1,12 @@
 package portsim.model.ship.state;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import static portsim.model.ship.state.StateShip.Priority.LOW;
 
+@NullMarked
 public interface Customs extends StateShip {
-    default @NotNull Priority getPriority() {
+    default Priority getPriority() {
         return LOW;
     }
 }

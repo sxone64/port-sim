@@ -1,9 +1,8 @@
 package portsim.ui.viewmodel;
 
 import javafx.beans.property.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import portsim.io.AppResources;
 import portsim.model.ship.ContainerShip;
 import portsim.model.ship.Cruiser;
@@ -26,12 +25,13 @@ import java.util.function.Consumer;
 import static portsim.util.FieldValidator.MAX_SPEED;
 import static portsim.util.FieldValidator.MIN_SPEED;
 
+@NullMarked
 public final class ShipFormViewModel {
     private final StringProperty nameProperty = new SimpleStringProperty("");
     private final StringProperty imoProperty = new SimpleStringProperty("");
     private final StringProperty regNumberProperty = new SimpleStringProperty("");
     private final StringProperty engineNumberProperty = new SimpleStringProperty("");
-    private final ObjectProperty<Path> photoPathProperty = new SimpleObjectProperty<>();
+    private final ObjectProperty<@Nullable Path> photoPathProperty = new SimpleObjectProperty<>();
 
     private final BooleanProperty isClearPhotoPathEnabled = new SimpleBooleanProperty(false);
 
@@ -39,7 +39,7 @@ public final class ShipFormViewModel {
     private final StringProperty volumeProperty = new SimpleStringProperty("");
     private final StringProperty capacityProperty = new SimpleStringProperty("");
 
-    private final ObjectProperty<Ship> updateShipProperty = new SimpleObjectProperty<>(null);
+    private final ObjectProperty<@Nullable Ship> updateShipProperty = new SimpleObjectProperty<>();
 
     private final PortService portService = PortService.getInstance();
     private final Path defaultPhotoPath = AppResources.getInstance().getDefaultPhotoPath();
@@ -74,7 +74,7 @@ public final class ShipFormViewModel {
         return engineNumberProperty;
     }
 
-    public ReadOnlyObjectProperty<Path> photoPathProperty() {
+    public ReadOnlyObjectProperty<@Nullable Path> photoPathProperty() {
         return photoPathProperty;
     }
 
@@ -94,11 +94,11 @@ public final class ShipFormViewModel {
         return capacityProperty;
     }
 
-    public ReadOnlyObjectProperty<Ship> updateShipProperty() {
+    public ReadOnlyObjectProperty<@Nullable Ship> updateShipProperty() {
         return updateShipProperty;
     }
 
-    public void setOnConfirmFailed(@Nullable Consumer<String> onConfirmFailed) {
+    public void setOnConfirmFailed(Consumer<String> onConfirmFailed) {
         this.onConfirmFailed = onConfirmFailed;
     }
 
@@ -109,7 +109,7 @@ public final class ShipFormViewModel {
         isClearPhotoPathEnabled.setValue(!isDefault);
     }
 
-    public boolean confirm(@NotNull Class<? extends Ship> type) {
+    public boolean confirm(Class<? extends Ship> type) {
         try {
             var ship = buildShip(type);
             var updateShip = updateShipProperty.getValue();
@@ -126,7 +126,7 @@ public final class ShipFormViewModel {
         }
     }
 
-    private void setUpdateProperties(@NotNull Ship updateShip) {
+    private void setUpdateProperties(Ship updateShip) {
         nameProperty.setValue(updateShip.getName());
         imoProperty.setValue(String.valueOf(updateShip.getImo()));
         regNumberProperty.setValue(updateShip.getRegNumber());
@@ -148,7 +148,7 @@ public final class ShipFormViewModel {
         updateShipProperty.setValue(updateShip);
     }
 
-    private @NonNull Ship buildShip(Class<? extends Ship> type) throws FieldValidationException {
+    private Ship buildShip(Class<? extends Ship> type) throws FieldValidationException {
         var validator = FieldValidator.getInstance();
 
         var name = validator.requireNotBlank("Name", nameProperty.getValue());

@@ -1,7 +1,6 @@
 package portsim.util;
 
-import org.jetbrains.annotations.NotNull;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import portsim.io.AppResources;
 import portsim.model.ship.Ship;
 import portsim.model.ship.ShipTypes;
@@ -15,6 +14,7 @@ import java.util.UUID;
 
 import static portsim.util.FieldValidator.*;
 
+@NullMarked
 public final class ShipGenerator {
     private static final ShipGenerator INSTANCE = new ShipGenerator();
 
@@ -30,15 +30,15 @@ public final class ShipGenerator {
 
     private ShipGenerator() {}
 
-    public @NotNull Ship generateStateShip() {
+    public Ship generateStateShip() {
         return generate(ShipTypes.state());
     }
 
-    public @NotNull Ship generateCommercialShip() {
+    public Ship generateCommercialShip() {
         return generate(ShipTypes.commercial());
     }
 
-    private @NonNull Ship generate(@NonNull List<Class<? extends Ship>> types) {
+    private Ship generate(List<Class<? extends Ship>> types) {
         var type = types.get(random.nextInt(types.size()));
 
         var id = UUID.randomUUID().toString().substring(0, 6);

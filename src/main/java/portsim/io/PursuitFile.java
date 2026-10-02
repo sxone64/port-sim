@@ -1,7 +1,6 @@
 package portsim.io;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NullMarked;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -13,6 +12,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
+@NullMarked
 public final class PursuitFile {
     private static final PursuitFile INSTANCE = new PursuitFile();
 
@@ -27,7 +27,7 @@ public final class PursuitFile {
 
     private final AppLogger logger = AppLogger.getInstance();
 
-    private List<Integer> imoList;
+    private List<Integer> imoList = List.of();
 
     private PursuitFile() {
         createIfAbsent();
@@ -36,7 +36,7 @@ public final class PursuitFile {
     }
 
     // Multiple threads can get the IMO list at the same time if write lock isn't acquired upon reading the file
-    public @NotNull @Unmodifiable List<Integer> getImoList() {
+    public List<Integer> getImoList() {
         lock.readLock().lock();
         try {
             return List.copyOf(imoList);
@@ -109,7 +109,7 @@ public final class PursuitFile {
         Upon taking the first event we flip pendingChange to true and attempt to exhaust the event queue via poll.
         If no other event arrives in WATCH_DEBOUNCE time we attempt the reading
     */
-    private @NotNull Thread createWatchThread(WatchService watchService, Path fileName) {
+    private Thread createWatchThread(WatchService watchService, Path fileName) {
         var thread = new Thread(() -> {
             var pendingChange = false;
 

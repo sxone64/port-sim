@@ -6,6 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
+import org.jspecify.annotations.NullMarked;
 import portsim.io.AppLogger;
 import portsim.io.AppResources;
 
@@ -13,6 +14,7 @@ import java.io.IOException;
 
 import static javafx.scene.control.Alert.AlertType.ERROR;
 
+@NullMarked
 public class Main extends Application {
     @Override
     public void start(Stage stage) {
@@ -30,7 +32,7 @@ public class Main extends Application {
             Platform.exit();
         });
 
-        // All exception that aren't caught are logged as severe
+        // All exceptions that aren't caught are logged as severe
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) ->
                 AppLogger.getInstance().severe(
                         "Uncaught exception in %s".formatted(thread.getName()),

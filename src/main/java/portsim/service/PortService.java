@@ -1,7 +1,6 @@
 package portsim.service;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NullMarked;
 import portsim.io.PortPersistence;
 import portsim.model.Port;
 import portsim.model.Terminal;
@@ -13,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.ToIntFunction;
 
+@NullMarked
 public final class PortService {
     private static final PortService INSTANCE = new PortService();
 
@@ -36,7 +36,7 @@ public final class PortService {
                 .forEach(imoRegistry::add);
     }
 
-    public @NotNull @Unmodifiable List<Ship> getShips(int idTerminal) {
+    public List<Ship> getShips(int idTerminal) {
         var terminal = getTerminal(idTerminal);
         return List.copyOf(terminal.getShips());
     }
@@ -62,7 +62,7 @@ public final class PortService {
         return terminal.getFreeDocks();
     }
 
-    public @NotNull @Unmodifiable List<Terminal> getTerminals() {
+    public List<Terminal> getTerminals() {
         return List.copyOf(port.terminals());
     }
 
@@ -70,7 +70,7 @@ public final class PortService {
         return imoRegistry.contains(imo);
     }
 
-    public void addShip(int idTerminal, @NotNull Ship ship) throws ImoConflictException {
+    public void addShip(int idTerminal, Ship ship) throws ImoConflictException {
         var terminal = getTerminal(idTerminal);
 
         if (imoRegistry.contains(ship.getImo()))
@@ -81,7 +81,7 @@ public final class PortService {
         portPersistence.savePort(port);
     }
 
-    public void removeShip(int idTerminal, @NotNull Ship ship) {
+    public void removeShip(int idTerminal, Ship ship) {
         var terminal = getTerminal(idTerminal);
 
         imoRegistry.remove(ship.getImo());
@@ -89,9 +89,7 @@ public final class PortService {
         portPersistence.savePort(port);
     }
 
-    public void updateShip(int idTerminal,
-                           @NotNull Ship oldShip,
-                           @NotNull Ship newShip) throws ImoConflictException {
+    public void updateShip(int idTerminal, Ship oldShip, Ship newShip) throws ImoConflictException {
         var terminal = getTerminal(idTerminal);
 
         var newImo = newShip.getImo();
@@ -115,7 +113,7 @@ public final class PortService {
                 .sum();
     }
 
-    private @NotNull Terminal getTerminal(int idTerminal) {
+    private Terminal getTerminal(int idTerminal) {
         return port.getTerminal(idTerminal)
                 .orElseThrow(() -> new NotFoundException("Terminal with ID %d doesn't exist".formatted(idTerminal)));
     }
