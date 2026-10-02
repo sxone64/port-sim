@@ -51,30 +51,23 @@ public final class ShipGenerator {
             imo = random.nextInt(MIN_IMO, MAX_IMO + 1);
         } while (portService.isImoTaken(imo));
 
-        try {
-            var builder = ShipBuilder.of(type)
-                    .name("GEN-%s".formatted(id))
-                    .engineNumber("ENG-%s".formatted(id))
-                    .regNumber("REG-%s".formatted(id))
-                    .imo(String.valueOf(imo))
-                    .speed(random.nextInt(MIN_SPEED, MAX_SPEED + 1))
-                    .photoPath(DEFAULT_PHOTO);
+        var builder = ShipBuilder.of(type)
+                .name("GEN-%s".formatted(id))
+                .engineNumber("ENG-%s".formatted(id))
+                .regNumber("REG-%s".formatted(id))
+                .imo(imo)
+                .speed(random.nextInt(MIN_SPEED, MAX_SPEED + 1))
+                .photoPath(DEFAULT_PHOTO);
 
-            if (Cruiser.class.isAssignableFrom(type))
-                builder.numPassengers(
-                        String.valueOf(random.nextInt(MIN_NUM_PASSENGERS, MAX_NUM_PASSENGERS)));
+        if (Cruiser.class.isAssignableFrom(type))
+            builder.numPassengers(random.nextInt(MIN_NUM_PASSENGERS, MAX_NUM_PASSENGERS));
 
-            else if (Tanker.class.isAssignableFrom(type))
-                builder.volume(
-                        String.valueOf(random.nextInt(MIN_VOLUME, MAX_VOLUME)));
+        else if (Tanker.class.isAssignableFrom(type))
+            builder.volume(random.nextInt(MIN_VOLUME, MAX_VOLUME));
 
-            else if (ContainerShip.class.isAssignableFrom(type))
-                builder.capacity(
-                        String.valueOf(random.nextInt(MIN_CAPACITY, MAX_CAPACITY)));
+        else if (ContainerShip.class.isAssignableFrom(type))
+            builder.capacity(random.nextInt(MIN_CAPACITY, MAX_CAPACITY));
 
-            return builder.build();
-        } catch (FieldValidationException e) {
-            throw new IllegalStateException("Ship field validation failed", e);
-        }
+        return builder.build();
     }
 }

@@ -12,8 +12,10 @@ import portsim.model.ship.factory.ShipBuilder;
 import portsim.service.ImoConflictException;
 import portsim.service.PortService;
 import portsim.util.FieldValidationException;
+import portsim.util.FieldValidator;
 
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.Random;
 import java.util.function.Consumer;
 
@@ -143,24 +145,37 @@ public final class ShipFormViewModel {
     }
 
     private Ship buildShip(Class<? extends Ship> type) throws FieldValidationException {
+        var validator = FieldValidator.getInstance();
+
+        var name = validator.requireNotBlank("Name", nameProperty.getValue());
+        var imo = validator.requireValidImo("IMO", imoProperty.getValue());
+        var regNumber = validator.requireNotBlank("Registration number", regNumberProperty.getValue());
+        var engineNumber = validator.requireNotBlank("Engine number", engineNumberProperty.getValue());
+        var speed = validator.requireValidSpeed("Speed", getRandomSpeed());
+        var photoPath = validator.requireValidPath("Photo",
+                Objects.requireNonNullElse(photoPathProperty.getValue(), defaultPhotoPath));
+
         var builder = ShipBuilder.of(type)
-                .name(nameProperty.getValue())
-                .imo(imoProperty.getValue())
-                .regNumber(regNumberProperty.getValue())
-                .engineNumber(engineNumberProperty.getValue())
-                .speed(getRandomSpeed());
+                .name(name)
+                .engineNumber(engineNumber)
+                .regNumber(regNumber)
+                .imo(imo)
+                .speed(speed)
+                .photoPath(photoPath);
 
-        var photoPath = photoPathProperty.getValue();
-        builder.photoPath(photoPath == null ? defaultPhotoPath : photoPath);
-
-        if (Cruiser.class.isAssignableFrom(type))
-            builder.numPassengers(numPassengersProperty.getValue());
-
-        else if (Tanker.class.isAssignableFrom(type))
-            builder.volume(volumeProperty.getValue());
-
-        else if (ContainerShip.class.isAssignableFrom(type))
-            builder.capacity(capacityProperty.getValue());
+        if (Cruiser.class.isAssignableFrom(type)) {
+            var numPassengers = validator.requireValidNumPassengers("Number of passengers",
+                    numPassengersProperty.getValue());
+            builder.numPassengers(numPassengers);
+        }
+        else if (Tanker.class.isAssignableFrom(type)) {
+            var volume = validator.requireValidVolume("Volume", volumeProperty.getValue());
+            builder.volume(volume);
+        }
+        else if (ContainerShip.class.isAssignableFrom(type)) {
+            var capacity = validator.requireValidCapacity("Capacity", capacityProperty.getValue());
+            builder.capacity(capacity);
+        }
 
         return builder.build();
     }

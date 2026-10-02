@@ -2,8 +2,6 @@ package portsim.model.ship.factory;
 
 import org.jetbrains.annotations.NotNull;
 import portsim.model.ship.Ship;
-import portsim.util.FieldValidationException;
-import portsim.util.FieldValidator;
 
 import java.nio.file.Path;
 
@@ -17,8 +15,6 @@ public final class ShipBuilder {
     private Integer numPassengers;
     private Double volume;
     private Integer capacity;
-
-    private final FieldValidator validator = FieldValidator.getInstance();
 
     public static @NotNull ShipBuilder of(@NotNull Class<? extends Ship> type) {
         return new ShipBuilder(type);
@@ -64,49 +60,46 @@ public final class ShipBuilder {
         return capacity;
     }
 
-    public ShipBuilder name(@NotNull String name) throws FieldValidationException {
-        this.name = validator.requireNotBlank("Name", name);
+    public ShipBuilder name(@NotNull String name) {
+        this.name = name;
         return this;
     }
 
-    public ShipBuilder engineNumber(@NotNull String engineNumber) throws FieldValidationException {
-        this.engineNumber = validator.requireNotBlank("Engine number", engineNumber);
+    public ShipBuilder engineNumber(@NotNull String engineNumber) {
+        this.engineNumber = engineNumber;
         return this;
     }
 
-    public ShipBuilder regNumber(@NotNull String regNumber) throws FieldValidationException {
-        this.regNumber = validator.requireNotBlank("Registration number", regNumber);
+    public ShipBuilder regNumber(@NotNull String regNumber) {
+        this.regNumber = regNumber;
         return this;
     }
 
-    public ShipBuilder imo(@NotNull String imo) throws FieldValidationException {
-        this.imo = validator.requireValidImo("IMO", imo);
+    public ShipBuilder imo(int imo) {
+        this.imo = imo;
         return this;
     }
 
-    public ShipBuilder speed(int speed) throws FieldValidationException {
-        this.speed = validator.requireValidSpeed("Speed", speed);
+    public ShipBuilder speed(int speed) {
+        this.speed = speed;
         return this;
     }
 
-    public ShipBuilder photoPath(@NotNull Path photoPath) throws FieldValidationException {
-        this.photoPath = validator.requireValidPath("Photo", photoPath);
+    public ShipBuilder photoPath(@NotNull Path photoPath) {
+        this.photoPath = photoPath;
         return this;
     }
 
-    public ShipBuilder numPassengers(@NotNull String numPassengers) throws FieldValidationException {
-        this.numPassengers = validator.requireValidNumPassengers("Number of passengers", numPassengers);
-        return this;
+    public void numPassengers(int numPassengers) {
+        this.numPassengers = numPassengers;
     }
 
-    public ShipBuilder volume(@NotNull String volume) throws FieldValidationException {
-        this.volume = validator.requireValidVolume("Volume", volume);
-        return this;
+    public void volume(double volume) {
+        this.volume = volume;
     }
 
-    public ShipBuilder capacity(@NotNull String capacity) throws FieldValidationException {
-        this.capacity = validator.requireValidCapacity("Capacity", capacity);
-        return this;
+    public void capacity(int capacity) {
+        this.capacity = capacity;
     }
 
     public Ship build() {
