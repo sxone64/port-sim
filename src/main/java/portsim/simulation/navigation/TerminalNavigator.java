@@ -22,6 +22,8 @@ public final class TerminalNavigator {
     // Holds info about original lane returning positions for ships that are overtaking
     private final Map<Ship, Position> pendingReturn = new ConcurrentHashMap<>();
 
+    private final Map<Ship, Position> pendingUndock = new ConcurrentHashMap<>();
+
     public TerminalNavigator(Terminal terminal) {
         this.terminal = terminal;
 
@@ -40,12 +42,19 @@ public final class TerminalNavigator {
             case UNDOCK_AND_EXIT -> nextStepExiting(current);
         };
 
-        // We find out here if the ship needs to overtake or not
-        if (action instanceof NavigationAction.Move(Position position) && !pendingReturn.containsKey(ship)) {
-            var overtake = nextOvertakeStep(ship, current, position);
+        if (action instanceof NavigationAction.Move(Position position)) {
+            var currentType = terminal.getCellType(current);
 
-            if (overtake.isPresent())
-                return new NavigationAction.Move(overtake.get());
+            if (goal == Goal.UNDOCK_AND_EXIT && currentType == DOCK)
+                pendingUndock.put(ship, position);
+
+            // We find out here if the ship needs to overtake or not
+            else if (!pendingReturn.containsKey(ship)) {
+                var overtake = nextOvertakeStep(ship, current, position);
+
+                if (overtake.isPresent())
+                    return new NavigationAction.Move(overtake.get());
+            }
         }
 
         return action;
