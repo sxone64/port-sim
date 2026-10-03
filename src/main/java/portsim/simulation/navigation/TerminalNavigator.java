@@ -4,6 +4,7 @@ import org.jspecify.annotations.NullMarked;
 import portsim.model.Position;
 import portsim.model.Terminal;
 import portsim.model.ship.Ship;
+import portsim.simulation.SimulationEngine;
 import portsim.simulation.thread.ShipThread.Goal;
 
 import java.util.Map;
@@ -24,11 +25,67 @@ public final class TerminalNavigator {
 
     private final Map<Ship, Position> pendingUndock = new ConcurrentHashMap<>();
 
+    private final SimulationEngine engine = SimulationEngine.getInstance();
+
     public TerminalNavigator(Terminal terminal) {
         this.terminal = terminal;
 
         MIN_RETURN_COLUMN = terminal.getTransitColumns();
         MAX_RETURN_COLUMN = terminal.getTotalColumns() - 1;
+    }
+
+    public boolean tryEnter(Ship ship, Position arrival) {
+        if (terminal.isOccupied(arrival))
+            return false;
+
+        terminal.placeShip(ship, arrival);
+
+        engine.notifyListeners(listener ->
+                listener.onShipEntered(ship, arrival, terminal.getIdTerminal())
+        );
+
+        return true;
+    }
+
+    public boolean tryAdvance(Ship ship, Position from, Position to) {
+        var returnPosition = pendingReturn.get(ship);
+        var isReturnMove = to.equals(returnPosition);
+
+        if (terminal.isOccupied(to))
+            return false;
+
+        if (pendingUndock.containsValue(to)) {
+            var undockPosition = pendingUndock.get(ship);
+
+            if (!undockPosition.equals(to))
+                return false;
+
+            pendingUndock.remove(ship);
+        }
+
+        terminal.moveShip(ship, to);
+
+        if (isReturnMove)
+            pendingReturn.remove(ship);
+
+        engine.notifyListeners(listener ->
+                listener.onShipMoved(ship, from, to, terminal.getIdTerminal())
+        );
+
+        return true;
+    }
+
+    public boolean tryLeave(Ship ship, Position position) {
+        if (!position.equals(new Position(0, 1)) && !position.equals(new Position(3, 0)))
+            return false;
+
+        terminal.removeShip(ship);
+
+        engine.notifyListeners(listener ->
+                listener.onShipLeft(ship, position, terminal.getIdTerminal())
+        );
+
+        return true;
     }
 
     public NavigationAction nextStep(Ship ship, Position current, Goal goal) {
