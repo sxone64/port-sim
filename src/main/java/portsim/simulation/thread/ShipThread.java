@@ -60,6 +60,7 @@ public final class ShipThread implements Runnable {
             Thread.currentThread().interrupt();
         } finally {
             engine.notifyListeners(listener -> listener.onShipThreadFinished(ship, goal));
+            engine.reportThreadFinished(goal);
         }
     }
 
