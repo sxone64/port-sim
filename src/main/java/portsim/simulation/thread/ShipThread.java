@@ -91,29 +91,18 @@ public final class ShipThread implements Runnable {
     // Returns false if terminal transfer shouldn't be attempted again
     private boolean handleTransfer(int direction, Position arrival) throws InterruptedException {
         var navigator = session.getNavigator();
+        var idTerminalFrom = session.getTerminal().getIdTerminal();
 
-        var nextIdTerminal = session.getTerminal().getIdTerminal() + direction;
-        var nextSession = engine.getTerminalSession(nextIdTerminal);
+        var transferSuccess = session.lockedGet(() -> navigator.tryTransfer(ship, current, direction, arrival));
 
-        // End of the terminal chain is reached
-        if (nextSession.isEmpty()) {
-            session.locked(() -> session.getNavigator().tryLeave(ship, current));
-            return false;
-        }
+        if (transferSuccess) {
+            var nextIdTerminal = idTerminalFrom + direction;
+            var nextSession = engine.getTerminalSession(nextIdTerminal);
 
-        // Leave the previous terminal
-        var leaveSuccess = session.lockedGet(() -> navigator.tryLeave(ship, current));
+            // Ship has left the port
+            if (nextSession.isEmpty())
+                return false;
 
-        if (!leaveSuccess) {
-            Thread.sleep(BACKOFF_MILLIS);
-            return true;
-        }
-
-        // Enter the next terminal
-        var nextNavigator = nextSession.get().getNavigator();
-        var enterSuccess = nextSession.get().lockedGet(() -> nextNavigator.tryEnter(ship, arrival));
-
-        if (enterSuccess) {
             session = nextSession.get();
             current = arrival;
         }

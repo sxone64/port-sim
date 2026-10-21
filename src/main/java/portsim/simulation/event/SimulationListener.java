@@ -10,6 +10,8 @@ public interface SimulationListener {
     default void onShipEntered(Ship ship, Position arrival, int idTerminal) {}
     default void onShipLeft(Ship ship, Position leaving, int idTerminal) {}
 
+    default void onShipTransferred(Ship ship, int idTerminalFrom, Position from, int idTerminalTo, Position to) {}
+
     default void onShipMoved(Ship ship, Position from, Position to, int idTerminal) {}
 
     default void onShipThreadFinished(Ship ship, Goal goal) {}

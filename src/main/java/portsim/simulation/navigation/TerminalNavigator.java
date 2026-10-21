@@ -88,6 +88,31 @@ public final class TerminalNavigator {
         return true;
     }
 
+    public boolean tryTransfer(Ship ship, Position currentPos, int direction, Position arrival) {
+        var nextIdTerminal = terminal.getIdTerminal() + direction;
+        var nextSessionOptional = engine.getTerminalSession(nextIdTerminal);
+
+        // If no next terminal exists, attempt to leave the port entirely
+        if (nextSessionOptional.isEmpty())
+            return tryLeave(ship, currentPos);
+
+        var nextSession = nextSessionOptional.get();
+        var nextTerminal = nextSession.getTerminal();
+
+        // Ensure the arrival cell in the next terminal is free
+        if (nextTerminal.isOccupied(arrival))
+            return false;
+
+        terminal.removeShip(ship);
+        nextTerminal.placeShip(ship, arrival);
+
+        engine.notifyListeners(listener ->
+                listener.onShipTransferred(ship, terminal.getIdTerminal(), currentPos, nextIdTerminal, arrival)
+        );
+
+        return true;
+    }
+
     public NavigationAction nextStep(Ship ship, Position current, Goal goal) {
         var returnStep = nextReturnStep(ship, current);
 
