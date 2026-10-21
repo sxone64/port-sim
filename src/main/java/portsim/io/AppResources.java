@@ -33,6 +33,10 @@ public final class AppResources {
         return DEFAULT_PHOTO_PATH;
     }
 
+    public URL getSprite(String subfolder, String filename) {
+        return requireResource("/sprites/%s/%s".formatted(subfolder, filename));
+    }
+
     private URL requireResource(String path) {
         var resource = AppResources.class.getResource(path);
 
