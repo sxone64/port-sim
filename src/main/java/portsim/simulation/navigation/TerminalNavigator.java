@@ -102,7 +102,7 @@ public final class TerminalNavigator {
         if (action instanceof NavigationAction.Move(Position position)) {
             var currentType = terminal.getCellType(current);
 
-            if (goal == Goal.UNDOCK_AND_EXIT && currentType == DOCK)
+            if (goal == Goal.UNDOCK_AND_EXIT && (currentType == DOCK_UP || currentType == DOCK_DOWN))
                 pendingUndock.put(ship, position);
 
             // We find out here if the ship needs to overtake or not
@@ -350,7 +350,7 @@ public final class TerminalNavigator {
         }
 
         // Undock the ship to CHANNEL_LEFT or CHANNEL_RIGHT lane depending on where the ship is docked
-        else if (cellType == DOCK)
+        else if (cellType == DOCK_UP || cellType == DOCK_DOWN)
             return current.row() == 0
                     ? new NavigationAction.Move(new Position(1, current.column()))
                     : new NavigationAction.Move(new Position(2, current.column()));

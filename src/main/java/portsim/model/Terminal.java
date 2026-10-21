@@ -141,7 +141,8 @@ public final class Terminal implements Serializable {
         var cell = getCell(position);
         checkNotOccupied(cell, position);
 
-        if (cell.getType() == DOCK)
+        var type = cell.getType();
+        if (type == DOCK_UP || type == DOCK_DOWN)
             checkShipRegistered(ship);
 
         cell.setOccupant(ship);
@@ -157,7 +158,7 @@ public final class Terminal implements Serializable {
         var toCell = getCell(to);
         checkNotOccupied(toCell, to);
 
-        if (toCell.getType() == DOCK)
+        if (toCell.getType() == DOCK_UP || toCell.getType() == DOCK_DOWN)
             checkShipRegistered(ship);
 
         getCell(from).setOccupant(null);
@@ -172,10 +173,10 @@ public final class Terminal implements Serializable {
             var isTransitColumn = col < TRANSIT_COLUMNS;
             var transitType = col == 0 ? TRANSIT_DOWN : TRANSIT_UP;
 
-            grid[0][col] = new Cell(isTransitColumn ? transitType : Cell.Type.DOCK);
+            grid[0][col] = new Cell(isTransitColumn ? transitType : Cell.Type.DOCK_UP);
             grid[1][col] = new Cell(isTransitColumn ? transitType : Cell.Type.CHANNEL_LEFT);
             grid[2][col] = new Cell(isTransitColumn ? transitType : Cell.Type.CHANNEL_RIGHT);
-            grid[3][col] = new Cell(isTransitColumn ? transitType : Cell.Type.DOCK);
+            grid[3][col] = new Cell(isTransitColumn ? transitType : Cell.Type.DOCK_DOWN);
         }
 
         return grid;
@@ -185,9 +186,11 @@ public final class Terminal implements Serializable {
         var dockPositions = new ArrayList<Position>();
 
         for (var row = 0; row < GRID_ROWS; row++)
-            for (var col = 0; col < GRID_COLUMNS; col++)
-                if (grid[row][col].getType() == DOCK)
+            for (var col = 0; col < GRID_COLUMNS; col++) {
+                var type = grid[row][col].getType();
+                if (type == DOCK_UP || type == DOCK_DOWN)
                     dockPositions.add(new Position(row, col));
+            }
 
         return dockPositions;
     }

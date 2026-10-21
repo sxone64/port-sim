@@ -16,7 +16,7 @@ public final class Cell implements Serializable {
 
     public enum Type {
         TRANSIT_DOWN, TRANSIT_UP,
-        DOCK,
+        DOCK_UP, DOCK_DOWN,
         CHANNEL_LEFT,
         CHANNEL_RIGHT
     }
