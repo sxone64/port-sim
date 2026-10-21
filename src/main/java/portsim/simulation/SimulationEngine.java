@@ -145,6 +145,10 @@ public final class SimulationEngine {
 
                 terminal.registerShip(ship);
                 terminal.placeShip(ship, dock);
+
+                notifyListeners(simulationListener ->
+                        simulationListener.onShipPlaced(ship, dock, terminal.getIdTerminal())
+                );
             }
         }
     }

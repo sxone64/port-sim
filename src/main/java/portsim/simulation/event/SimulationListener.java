@@ -7,6 +7,8 @@ import portsim.simulation.thread.ShipThread.Goal;
 
 @NullMarked
 public interface SimulationListener {
+    default void onShipPlaced(Ship ship, Position pos, int idTerminal) {}
+
     default void onShipEntered(Ship ship, Position arrival, int idTerminal) {}
     default void onShipLeft(Ship ship, Position leaving, int idTerminal) {}
 
