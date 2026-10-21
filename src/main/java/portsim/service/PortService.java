@@ -62,6 +62,10 @@ public final class PortService {
         return terminal.getFreeDocks();
     }
 
+    public Port getPort() {
+        return port;
+    }
+
     public List<Terminal> getTerminals() {
         return List.copyOf(port.terminals());
     }
