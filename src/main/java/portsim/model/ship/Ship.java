@@ -1,5 +1,6 @@
 package portsim.model.ship;
 
+import javafx.util.Duration;
 import org.jspecify.annotations.NullMarked;
 
 import java.io.Serial;
@@ -47,5 +48,10 @@ public abstract class Ship implements Serializable {
 
     public Path getPhotoPath() {
         return Path.of(photoPath);
+    }
+
+    // Amount of time the ship holds a single terminal cell
+    public Duration getStepDuration() {
+        return Duration.millis((double) 60_000 / speed);
     }
 }

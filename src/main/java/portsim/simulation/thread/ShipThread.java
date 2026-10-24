@@ -83,7 +83,7 @@ public final class ShipThread implements Runnable {
 
         if (moveSuccess) {
             current = destination;
-            Thread.sleep(computeStepDelay());
+            Thread.sleep((long) ship.getStepDuration().toMillis());
         }
         else Thread.sleep(BACKOFF_MILLIS);
     }
@@ -109,9 +109,5 @@ public final class ShipThread implements Runnable {
         else Thread.sleep(BACKOFF_MILLIS);
 
         return true;
-    }
-
-    private int computeStepDelay() {
-        return 60_000 / ship.getSpeed();
     }
 }
