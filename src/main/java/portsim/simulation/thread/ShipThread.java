@@ -36,13 +36,12 @@ public final class ShipThread implements Runnable {
     @Override
     public void run() {
         try {
-            var navigator = session.getNavigator();
-
             // Entering ship waits until its start position is free to be occupied
             if (goal == ENTER_AND_DOCK)
                 handleEntry();
 
             while (true) {
+                var navigator = session.getNavigator();
                 var action = navigator.nextStep(ship, current, goal);
 
                 // Navigator proposed a move action within the terminal
