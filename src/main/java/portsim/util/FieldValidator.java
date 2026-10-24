@@ -12,7 +12,7 @@ public final class FieldValidator {
     private static final FieldValidator INSTANCE = new FieldValidator();
 
     public static final int MIN_IMO = 1_000_000, MAX_IMO = 9_999_999;
-    public static final int MIN_SPEED = 30, MAX_SPEED = 120;
+    public static final int MIN_SPEED = 60, MAX_SPEED = 90;
     public static final int MIN_CAPACITY = 1_000, MAX_CAPACITY = 24_000;
     public static final int MIN_NUM_PASSENGERS = 500, MAX_NUM_PASSENGERS = 7_000;
     public static final int MIN_VOLUME = 200_000, MAX_VOLUME = 3_000_000;
