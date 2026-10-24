@@ -22,9 +22,9 @@ public final class ShipSprites {
             Map.entry(CustomsCruiser.class, "cruiser/customs/customs-cruiser.png"),
             Map.entry(CustomsTanker.class, "tanker/customs/customs-tanker.png"),
             Map.entry(FireBrigadeTanker.class, "tanker/fire-brigade/fire-tanker.png"),
-            Map.entry(GuardContainerShip.class, "container/police/guard-container.png"),
-            Map.entry(GuardCruiser.class, "cruiser/police/guard-cruiser.png"),
-            Map.entry(GuardTanker.class, "tanker/police/guard-tanker.png")
+            Map.entry(GuardContainerShip.class, "container/guard/guard-container.png"),
+            Map.entry(GuardCruiser.class, "cruiser/guard/guard-cruiser.png"),
+            Map.entry(GuardTanker.class, "tanker/guard/guard-tanker.png")
     );
 
     private record VariantSpec(String prefix, int count) {}
