@@ -116,18 +116,18 @@ public final class TerminalNavigator {
         return true;
     }
 
-    public NavigationAction nextStep(Ship ship, Position current, Goal goal) {
+    public Step nextStep(Ship ship, Position current, Goal goal) {
         var returnStep = nextReturnStep(ship, current);
 
         if (returnStep.isPresent())
             return returnStep.get();
 
-        var action = switch (goal) {
+        var step = switch (goal) {
             case ENTER_AND_DOCK -> nextStepEntering(current);
             case UNDOCK_AND_EXIT -> nextStepExiting(current);
         };
 
-        if (action instanceof NavigationAction.Move(Position position)) {
+        if (step instanceof Step.Move(Position position)) {
             var currentType = terminal.getCellType(current);
 
             if (goal == Goal.UNDOCK_AND_EXIT && (currentType == DOCK_UP || currentType == DOCK_DOWN))
@@ -138,14 +138,14 @@ public final class TerminalNavigator {
                 var overtake = nextOvertakeStep(ship, current, position);
 
                 if (overtake.isPresent())
-                    return new NavigationAction.Move(overtake.get());
+                    return new Step.Move(overtake.get());
             }
         }
 
-        return action;
+        return step;
     }
 
-    private Optional<NavigationAction> nextReturnStep(Ship ship, Position current) {
+    private Optional<Step> nextReturnStep(Ship ship, Position current) {
         var returnPos = pendingReturn.get(ship);
 
         // It's determined that the ship isn't overtaking, so continue with normal lane movement
@@ -162,7 +162,7 @@ public final class TerminalNavigator {
             by moving to the return position
          */
         if ((isAdjacentLeft || isAdjacentRight) && !terminal.isOccupied(returnPos))
-            return Optional.of(new NavigationAction.Move(returnPos));
+            return Optional.of(new Step.Move(returnPos));
 
         int direction;
         if (currentType == CHANNEL_LEFT && isAdjacentRight && current.column() < MAX_RETURN_COLUMN)
@@ -184,7 +184,7 @@ public final class TerminalNavigator {
          */
         updatePendingReturn(ship, current, returnPos);
 
-        return Optional.of(new NavigationAction.Move(position));
+        return Optional.of(new Step.Move(position));
     }
 
     /*
@@ -294,7 +294,7 @@ public final class TerminalNavigator {
         return Optional.of(new Position(from.row(), returnColumn));
     }
 
-    private NavigationAction nextStepEntering(Position current) {
+    private Step nextStepEntering(Position current) {
         var lastColumn = terminal.getTotalColumns() - 1;
         var cellType = terminal.getCellType(current);
 
@@ -306,12 +306,12 @@ public final class TerminalNavigator {
         if (cellType == TRANSIT_DOWN) {
             if (current.equals(new Position(3, 0))) {
                 if (terminal.getFreeDocks() > 0)
-                    return new NavigationAction.Move(new Position(3, 1));
+                    return new Step.Move(new Position(3, 1));
                 else
-                    return new NavigationAction.Transfer(+1, new Position(0, 0));
+                    return new Step.Transfer(+1, new Position(0, 0));
             }
 
-            return new NavigationAction.Move(new Position(current.row() + 1, 0));
+            return new Step.Move(new Position(current.row() + 1, 0));
         }
 
         /*
@@ -323,13 +323,13 @@ public final class TerminalNavigator {
          */
         else if (cellType == TRANSIT_UP) {
             if (current.equals(new Position(2, 1)))
-                return new NavigationAction.Move(new Position(2, 2));
+                return new Step.Move(new Position(2, 2));
 
             else if (current.equals(new Position(0, 1))) {
                 if (terminal.getFreeDocks() > 0)
-                    return new NavigationAction.Move(new Position(0, 0));
+                    return new Step.Move(new Position(0, 0));
                 else
-                    return new NavigationAction.Transfer(-1, new Position(3, 1));
+                    return new Step.Transfer(-1, new Position(3, 1));
             }
         }
 
@@ -341,11 +341,11 @@ public final class TerminalNavigator {
             var dockBelow = new Position(3, current.column());
 
             if (!terminal.isOccupied(dockBelow))
-                return new NavigationAction.Move(dockBelow);
+                return new Step.Move(dockBelow);
 
             return current.column() < lastColumn
-                    ? new NavigationAction.Move(new Position(2, current.column() + 1))
-                    : new NavigationAction.Move(new Position(1, lastColumn));
+                    ? new Step.Move(new Position(2, current.column() + 1))
+                    : new Step.Move(new Position(1, lastColumn));
         }
 
         /*
@@ -356,44 +356,44 @@ public final class TerminalNavigator {
             var dockAbove = new Position(0, current.column());
 
             if (!terminal.isOccupied(dockAbove))
-                return new NavigationAction.Move(dockAbove);
+                return new Step.Move(dockAbove);
 
-            return new NavigationAction.Move(new Position(1, current.column() - 1));
+            return new Step.Move(new Position(1, current.column() - 1));
         }
 
         // Returned once the ship is docked
-        return new NavigationAction.Completed();
+        return new Step.Completed();
     }
 
     // Mostly the same ship movement applies as when the ship's entering
-    private NavigationAction nextStepExiting(Position current) {
+    private Step nextStepExiting(Position current) {
         var lastColumn = terminal.getTotalColumns() - 1;
         var cellType = terminal.getCellType(current);
 
         if (cellType == TRANSIT_UP) {
             if (current.equals(new Position(0, 1)))
-                return new NavigationAction.Transfer(-1, new Position(3, 1));
+                return new Step.Transfer(-1, new Position(3, 1));
 
-            return new NavigationAction.Move(new Position(current.row() - 1, current.column()));
+            return new Step.Move(new Position(current.row() - 1, current.column()));
         }
 
         // Undock the ship to CHANNEL_LEFT or CHANNEL_RIGHT lane depending on where the ship is docked
         else if (cellType == DOCK_UP || cellType == DOCK_DOWN)
             return current.row() == 0
-                    ? new NavigationAction.Move(new Position(1, current.column()))
-                    : new NavigationAction.Move(new Position(2, current.column()));
+                    ? new Step.Move(new Position(1, current.column()))
+                    : new Step.Move(new Position(2, current.column()));
 
         else if (cellType == CHANNEL_RIGHT)
             return current.column() < lastColumn
-                    ? new NavigationAction.Move(new Position(2, current.column() + 1))
-                    : new NavigationAction.Move(new Position(1, lastColumn));
+                    ? new Step.Move(new Position(2, current.column() + 1))
+                    : new Step.Move(new Position(1, lastColumn));
 
         else if (cellType == CHANNEL_LEFT)
             return current.column() > 1
-                    ? new NavigationAction.Move(new Position(1, current.column() - 1))
-                    : new NavigationAction.Move(new Position(0, 1));
+                    ? new Step.Move(new Position(1, current.column() - 1))
+                    : new Step.Move(new Position(0, 1));
 
         // TODO: Not sure if this is ever returned based on how leaving the port is detected
-        return new NavigationAction.Completed();
+        return new Step.Completed();
     }
 }

@@ -4,7 +4,7 @@ import org.jspecify.annotations.NullMarked;
 import portsim.model.Position;
 import portsim.model.ship.Ship;
 import portsim.simulation.SimulationEngine;
-import portsim.simulation.navigation.NavigationAction;
+import portsim.simulation.navigation.Step;
 import portsim.simulation.session.TerminalSession;
 
 import java.time.Duration;
@@ -45,14 +45,14 @@ public final class ShipThread implements Runnable {
 
             while (true) {
                 var navigator = session.getNavigator();
-                var action = navigator.nextStep(ship, current, goal);
+                var step = navigator.nextStep(ship, current, goal);
 
-                // Navigator proposed a move action within the terminal
-                if (action instanceof NavigationAction.Move(Position destination))
+                // Navigator proposed a move within the terminal
+                if (step instanceof Step.Move(Position destination))
                     handleMove(destination);
 
                 // Navigator proposed a transfer to another terminal
-                else if (action instanceof NavigationAction.Transfer(int direction, Position arrival)) {
+                else if (step instanceof Step.Transfer(int direction, Position arrival)) {
                     if (!handleTransfer(direction, arrival)) return;
                 }
 

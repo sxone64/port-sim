@@ -4,9 +4,9 @@ import org.jspecify.annotations.NullMarked;
 import portsim.model.Position;
 
 @NullMarked
-public sealed interface NavigationAction {
+public sealed interface Step {
     // Indicates a ship moving to a new position inside a single terminal
-    record Move(Position destination) implements NavigationAction {}
+    record Move(Position destination) implements Step {}
 
     /*
         Indicates a ship transfering from one terminal to another.
@@ -17,8 +17,8 @@ public sealed interface NavigationAction {
 
         Upon transfer ship is placed on specified arrival position
      */
-    record Transfer(int direction, Position arrival) implements NavigationAction {}
+    record Transfer(int direction, Position arrival) implements Step {}
 
     // Indicates that a ship has reached its goal
-    record Completed() implements NavigationAction {}
+    record Completed() implements Step {}
 }
