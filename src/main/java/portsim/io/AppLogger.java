@@ -65,6 +65,10 @@ public final class AppLogger {
             onSevereError.accept(message, t);
     }
 
+    public void warning(String message) {
+        LOGGER.log(WARNING, message);
+    }
+
     public void warning(String message, Throwable t) {
         LOGGER.log(WARNING, message, t);
     }

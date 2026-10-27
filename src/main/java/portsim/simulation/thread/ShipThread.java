@@ -1,6 +1,7 @@
 package portsim.simulation.thread;
 
 import org.jspecify.annotations.NullMarked;
+import portsim.io.AppLogger;
 import portsim.model.Position;
 import portsim.model.ship.Ship;
 import portsim.simulation.SimulationEngine;
@@ -75,7 +76,7 @@ public final class ShipThread implements Runnable {
             var entered = session.lockedGet(() -> navigator.tryEnter(ship, current, phaser));
 
             if (entered) {
-                phaser.await(ACK_TIMEOUT);
+                await(phaser);
                 break;
             }
 
@@ -91,7 +92,7 @@ public final class ShipThread implements Runnable {
 
         if (moveSuccess) {
             current = destination;
-            phaser.await(ACK_TIMEOUT);
+            await(phaser);
         }
         else Thread.sleep(BACKOFF_MILLIS);
     }
@@ -106,7 +107,7 @@ public final class ShipThread implements Runnable {
                 navigator.tryTransfer(ship, current, direction, arrival, phaser));
 
         if (transferSuccess) {
-            phaser.await(ACK_TIMEOUT);
+            await(phaser);
 
             var nextIdTerminal = idTerminalFrom + direction;
             var nextSession = engine.getTerminalSession(nextIdTerminal);
@@ -121,5 +122,12 @@ public final class ShipThread implements Runnable {
         else Thread.sleep(BACKOFF_MILLIS);
 
         return true;
+    }
+
+    private void await(StepPhaser phaser) throws InterruptedException {
+        if (!phaser.await(ACK_TIMEOUT))
+            AppLogger.getInstance()
+                    .warning("Listener didn't acknowledge the step for ship IMO %d in reasonable time"
+                            .formatted(ship.getImo()));
     }
 }
