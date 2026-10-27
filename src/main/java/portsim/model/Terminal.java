@@ -77,6 +77,10 @@ public final class Terminal implements Serializable {
         return List.copyOf(dockPositions);
     }
 
+    public int getTotalRows() {
+        return GRID_ROWS;
+    }
+
     public int getTotalColumns() {
         return GRID_COLUMNS;
     }
