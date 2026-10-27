@@ -7,11 +7,14 @@ import portsim.simulation.SimulationEngine;
 import portsim.simulation.navigation.NavigationAction;
 import portsim.simulation.session.TerminalSession;
 
+import java.time.Duration;
+
 import static portsim.simulation.thread.ShipThread.Goal.ENTER_AND_DOCK;
 
 @NullMarked
 public final class ShipThread implements Runnable {
     private static final int BACKOFF_MILLIS = 100;
+    private static final Duration ACK_TIMEOUT = Duration.ofSeconds(10);
 
     private final Ship ship;
     private final Goal goal;
@@ -68,9 +71,14 @@ public final class ShipThread implements Runnable {
         var navigator = session.getNavigator();
 
         while (true) {
-            var entered = session.lockedGet(() -> navigator.tryEnter(ship, current));
+            var phaser = new StepPhaser();
+            var entered = session.lockedGet(() -> navigator.tryEnter(ship, current, phaser));
 
-            if (entered) break;
+            if (entered) {
+                phaser.await(ACK_TIMEOUT);
+                break;
+            }
+
             Thread.sleep(BACKOFF_MILLIS);
         }
     }
@@ -78,11 +86,12 @@ public final class ShipThread implements Runnable {
     private void handleMove(Position destination) throws InterruptedException {
         var navigator = session.getNavigator();
 
-        var moveSuccess = session.lockedGet(() -> navigator.tryAdvance(ship, current, destination));
+        var phaser = new StepPhaser();
+        var moveSuccess = session.lockedGet(() -> navigator.tryAdvance(ship, current, destination, phaser));
 
         if (moveSuccess) {
             current = destination;
-            Thread.sleep((long) ship.getStepDuration().toMillis());
+            phaser.await(ACK_TIMEOUT);
         }
         else Thread.sleep(BACKOFF_MILLIS);
     }
@@ -92,9 +101,13 @@ public final class ShipThread implements Runnable {
         var navigator = session.getNavigator();
         var idTerminalFrom = session.getTerminal().getIdTerminal();
 
-        var transferSuccess = session.lockedGet(() -> navigator.tryTransfer(ship, current, direction, arrival));
+        var phaser = new StepPhaser();
+        var transferSuccess = session.lockedGet(() ->
+                navigator.tryTransfer(ship, current, direction, arrival, phaser));
 
         if (transferSuccess) {
+            phaser.await(ACK_TIMEOUT);
+
             var nextIdTerminal = idTerminalFrom + direction;
             var nextSession = engine.getTerminalSession(nextIdTerminal);
 

@@ -10,6 +10,7 @@ import portsim.simulation.event.SimulationListener;
 import portsim.simulation.session.TerminalSession;
 import portsim.simulation.thread.ShipThread;
 import portsim.simulation.thread.ShipThread.Goal;
+import portsim.simulation.thread.StepPhaser;
 import portsim.util.ShipGenerator;
 
 import java.util.*;
@@ -17,6 +18,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static portsim.simulation.thread.ShipThread.Goal.ENTER_AND_DOCK;
@@ -91,6 +93,12 @@ public final class SimulationEngine {
     public void notifyListeners(Consumer<SimulationListener> notification) {
         for (var listener: listeners)
             notification.accept(listener);
+    }
+
+    // Used for events that require acknowledgement upon successful processing
+    public void notifyListeners(StepPhaser phaser, BiConsumer<SimulationListener, Runnable> notification) {
+        for (var listener: listeners)
+            notification.accept(listener, phaser.createAck());
     }
 
     public void reportThreadFinished(Goal goal) {

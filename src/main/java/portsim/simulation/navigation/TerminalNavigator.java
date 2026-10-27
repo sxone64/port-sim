@@ -6,6 +6,7 @@ import portsim.model.Terminal;
 import portsim.model.ship.Ship;
 import portsim.simulation.SimulationEngine;
 import portsim.simulation.thread.ShipThread.Goal;
+import portsim.simulation.thread.StepPhaser;
 
 import java.util.Map;
 import java.util.Optional;
@@ -34,20 +35,20 @@ public final class TerminalNavigator {
         MAX_RETURN_COLUMN = terminal.getTotalColumns() - 1;
     }
 
-    public boolean tryEnter(Ship ship, Position arrival) {
+    public boolean tryEnter(Ship ship, Position arrival, StepPhaser phaser) {
         if (terminal.isOccupied(arrival))
             return false;
 
         terminal.placeShip(ship, arrival);
 
-        engine.notifyListeners(listener ->
-                listener.onShipEntered(ship, arrival, terminal.getIdTerminal())
+        engine.notifyListeners(phaser, (listener, ack) ->
+                listener.onShipEntered(ship, arrival, terminal.getIdTerminal(), ack)
         );
 
         return true;
     }
 
-    public boolean tryAdvance(Ship ship, Position from, Position to) {
+    public boolean tryAdvance(Ship ship, Position from, Position to, StepPhaser phaser) {
         var returnPosition = pendingReturn.get(ship);
         var isReturnMove = to.equals(returnPosition);
 
@@ -68,33 +69,34 @@ public final class TerminalNavigator {
         if (isReturnMove)
             pendingReturn.remove(ship);
 
-        engine.notifyListeners(listener ->
-                listener.onShipMoved(ship, from, to, terminal.getIdTerminal())
+        engine.notifyListeners(phaser, (listener, ack) ->
+                listener.onShipMoved(ship, from, to, terminal.getIdTerminal(), ack)
         );
 
         return true;
     }
 
-    public boolean tryLeave(Ship ship, Position position) {
+    public boolean tryLeave(Ship ship, Position position, StepPhaser phaser) {
         if (!position.equals(new Position(0, 1)) && !position.equals(new Position(3, 0)))
             return false;
 
         terminal.removeShip(ship);
 
-        engine.notifyListeners(listener ->
-                listener.onShipLeft(ship, position, terminal.getIdTerminal())
+        engine.notifyListeners(phaser, (listener, ack) ->
+                listener.onShipLeft(ship, position, terminal.getIdTerminal(), ack)
         );
 
         return true;
     }
 
-    public boolean tryTransfer(Ship ship, Position currentPos, int direction, Position arrival) {
+    public boolean tryTransfer(Ship ship, Position currentPos,
+                               int direction, Position arrival, StepPhaser phaser) {
         var nextIdTerminal = terminal.getIdTerminal() + direction;
         var nextSessionOptional = engine.getTerminalSession(nextIdTerminal);
 
         // If no next terminal exists, attempt to leave the port entirely
         if (nextSessionOptional.isEmpty())
-            return tryLeave(ship, currentPos);
+            return tryLeave(ship, currentPos, phaser);
 
         var nextSession = nextSessionOptional.get();
         var nextTerminal = nextSession.getTerminal();
@@ -106,8 +108,9 @@ public final class TerminalNavigator {
         terminal.removeShip(ship);
         nextTerminal.placeShip(ship, arrival);
 
-        engine.notifyListeners(listener ->
-                listener.onShipTransferred(ship, terminal.getIdTerminal(), currentPos, nextIdTerminal, arrival)
+        engine.notifyListeners(phaser, (listener, ack) ->
+                listener.onShipTransferred(
+                        ship, terminal.getIdTerminal(), currentPos, nextIdTerminal, arrival, ack)
         );
 
         return true;
