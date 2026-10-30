@@ -2,6 +2,7 @@ package portsim.ui.node;
 
 import javafx.scene.Cursor;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Scale;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -23,6 +24,7 @@ public final class SimulationPane extends Pane {
     public SimulationPane() {
         setCursor(Cursor.OPEN_HAND);
 
+        setupClipping();
         setupPanning();
         setupZooming();
     }
@@ -32,6 +34,17 @@ public final class SimulationPane extends Pane {
 
         content.getTransforms().add(scale);
         getChildren().add(content);
+    }
+
+    // Prevents content from being displayed outside of pane bounds when panning and zooming
+    private void setupClipping() {
+        var clip = new Rectangle();
+
+        // Rectangle always follows pane dimensions when resizing
+        clip.widthProperty().bind(widthProperty());
+        clip.heightProperty().bind(heightProperty());
+
+        setClip(clip);
     }
 
     private void setupPanning() {
