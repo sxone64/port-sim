@@ -18,6 +18,8 @@ public final class SimulationPane extends Pane {
     @Nullable
     private PortNode content;
 
+    private boolean initialFitDone;
+
     private double sceneAnchorX, sceneAnchorY;
     private double contentAnchorX, contentAnchorY;
 
@@ -34,6 +36,42 @@ public final class SimulationPane extends Pane {
 
         content.getTransforms().add(scale);
         getChildren().add(content);
+    }
+
+    @Override
+    protected void layoutChildren() {
+        super.layoutChildren();
+
+        if (!initialFitDone)
+            initialFitDone = zoomToFit();
+    }
+
+    /*
+        Scales and centers the content so that all of it is visible inside the pane.
+        Returns false if the pane or the content has no size yet and nothing could be done
+     */
+    public boolean zoomToFit() {
+        if (content == null) return false;
+
+        var bounds = content.getBoundsInLocal();
+
+        var availableWidth = getWidth();
+        var availableHeight = getHeight();
+
+        if (availableWidth <= 0 || availableHeight <= 0) return false;
+        if (bounds.getWidth() <= 0 || bounds.getHeight() <= 0) return false;
+
+        var fitScale = Math.min(
+                availableWidth / bounds.getWidth(),
+                availableHeight / bounds.getHeight());
+
+        scale.setX(fitScale);
+        scale.setY(fitScale);
+
+        content.setTranslateX((getWidth() - bounds.getWidth() * fitScale) / 2 - bounds.getMinX() * fitScale);
+        content.setTranslateY((getHeight() - bounds.getHeight() * fitScale) / 2 - bounds.getMinY() * fitScale);
+
+        return true;
     }
 
     // Prevents content from being displayed outside of pane bounds when panning and zooming
