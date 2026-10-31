@@ -29,6 +29,8 @@ public final class SimulationPane extends Pane {
         setupClipping();
         setupPanning();
         setupZooming();
+
+        setupFitOnResize();
     }
 
     public void setContent(PortNode node) {
@@ -72,6 +74,11 @@ public final class SimulationPane extends Pane {
         content.setTranslateY((getHeight() - bounds.getHeight() * fitScale) / 2 - bounds.getMinY() * fitScale);
 
         return true;
+    }
+
+    private void setupFitOnResize() {
+        widthProperty().addListener((_, _, _) -> zoomToFit());
+        heightProperty().addListener((_, _, _) -> zoomToFit());
     }
 
     // Prevents content from being displayed outside of pane bounds when panning and zooming
