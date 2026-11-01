@@ -152,7 +152,9 @@ public final class ShipFormController {
         return ShipTypeLabels.of(type);
     }
 
-    private void updateSpecificFields(Class<? extends Ship> type) {
+    private void updateSpecificFields(@Nullable Class<? extends Ship> type) {
+        if (type == null) return;
+
         specificFieldsVBox.getChildren().clear();
         var children = specificFieldsVBox.getChildren();
 
