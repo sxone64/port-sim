@@ -12,6 +12,7 @@ public final class AppResources {
 
     private final URL ADMIN_FXML = requireResource("/fxml/admin.fxml");
     private final URL SHIP_FORM_FXML = requireResource("/fxml/ship-form.fxml");
+    private final URL SIMULATION_FXML = requireResource("/fxml/simulation.fxml");
 
     private final Path DEFAULT_PHOTO_PATH = defaultPhotoPath();
 
@@ -27,6 +28,10 @@ public final class AppResources {
 
     public URL getShipFormFxml() {
         return SHIP_FORM_FXML;
+    }
+
+    public URL getSimulationFxml() {
+        return SIMULATION_FXML;
     }
 
     public Path getDefaultPhotoPath() {

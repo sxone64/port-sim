@@ -18,17 +18,29 @@ public final class FXMLLoaders {
     private FXMLLoaders() {}
 
     public static <C> View<C> load(URL fxml) {
-        var loader = new FXMLLoader(fxml);
+        return loadWith(fxml, Scene::new);
+    }
 
-        try {
-            var scene = new Scene(loader.load());
-            return new View<>(scene, loader.getController());
-        } catch (IOException e) {
-            throw new IllegalStateException(FXML_LOAD_FAILED, e);
-        }
+    public static <C> View<C> load(URL fxml, double width, double height) {
+        return loadWith(fxml, parent -> new Scene(parent, width, height));
     }
 
     public static Scene loadScene(URL fxml) {
         return load(fxml).scene();
+    }
+
+    public static Scene loadScene(URL fxml, double width, double height) {
+        return load(fxml, width, height).scene();
+    }
+
+    private static <C> View<C> loadWith(URL fxml, Function<Parent, Scene> sceneFactory) {
+        var loader = new FXMLLoader(fxml);
+
+        try {
+            Parent root = loader.load();
+            return new View<>(sceneFactory.apply(root), loader.getController());
+        } catch (IOException e) {
+            throw new IllegalStateException(FXML_LOAD_FAILED, e);
+        }
     }
 }

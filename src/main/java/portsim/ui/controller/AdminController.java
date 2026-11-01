@@ -1,7 +1,9 @@
 package portsim.ui.controller;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -188,7 +190,16 @@ public final class AdminController {
     }
 
     @FXML
-    private void onStartSimulationAction() {
-        // TODO
+    private void onStartSimulationAction(ActionEvent event) {
+        var stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        var currentScene = stage.getScene();
+
+        var simulationFXML = appResources.getSimulationFxml();
+
+        stage.setScene(FXMLLoaders.loadScene(
+                simulationFXML,
+                currentScene.getWidth(),
+                currentScene.getHeight())
+        );
     }
 }
