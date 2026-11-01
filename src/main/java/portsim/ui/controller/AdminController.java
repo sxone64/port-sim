@@ -2,20 +2,17 @@ package portsim.ui.controller;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jspecify.annotations.NullMarked;
 import portsim.io.AppResources;
+import portsim.io.FXMLLoaders;
 import portsim.model.ship.Ship;
 import portsim.ui.ShipTypeLabels;
 import portsim.ui.viewmodel.AdminViewModel;
 import portsim.ui.viewmodel.ShipFormViewModel;
-
-import java.io.IOException;
 
 import static javafx.geometry.Pos.CENTER;
 import static javafx.stage.Modality.APPLICATION_MODAL;
@@ -23,7 +20,6 @@ import static javafx.stage.Modality.APPLICATION_MODAL;
 @NullMarked
 public final class AdminController {
     private static final String TERMINAL_NOT_FOUND = "Operation requires a terminal to proceed";
-    private static final String FXML_LOAD_FAILED = "Failed to load the FXML resource";
 
     @FXML private VBox terminalsVBox;
     @FXML private Label totalShipsLabel;
@@ -43,6 +39,8 @@ public final class AdminController {
     private final ToggleGroup terminalsGroup = new ToggleGroup();
 
     private final AdminViewModel viewModel = new AdminViewModel();
+
+    private final AppResources appResources = AppResources.getInstance();
 
     @FXML
     private void initialize() {
@@ -151,24 +149,16 @@ public final class AdminController {
         var idTerminal = viewModel.getIdTerminal()
                 .orElseThrow(() -> new IllegalStateException(TERMINAL_NOT_FOUND));
 
-        var loader = new FXMLLoader(AppResources.getInstance().getShipFormFxml());
-
-        Scene scene;
-        try {
-            scene = new Scene(loader.load());
-        } catch (IOException e) {
-            throw new IllegalStateException(FXML_LOAD_FAILED, e);
-        }
-
-        ShipFormController controller = loader.getController();
-        controller.initialize(new ShipFormViewModel(idTerminal));
+        var formFxml = appResources.getShipFormFxml();
+        var form = FXMLLoaders.<ShipFormController>load(formFxml);
+        form.controller().initialize(new ShipFormViewModel(idTerminal));
 
         var stage = new Stage();
 
         stage.initModality(APPLICATION_MODAL);
         stage.initOwner(addShipBtn.getScene().getWindow());
         stage.setTitle("Add ship - Terminal %d".formatted(idTerminal));
-        stage.setScene(scene);
+        stage.setScene(form.scene());
 
         stage.setResizable(false);
         stage.showAndWait();
@@ -180,24 +170,16 @@ public final class AdminController {
         var idTerminal = viewModel.getIdTerminal()
                 .orElseThrow(() -> new IllegalStateException(TERMINAL_NOT_FOUND));
 
-        var loader = new FXMLLoader(AppResources.getInstance().getShipFormFxml());
-
-        Scene scene;
-        try {
-            scene = new Scene(loader.load());
-        } catch (IOException e) {
-            throw new IllegalStateException(FXML_LOAD_FAILED, e);
-        }
-
-        ShipFormController controller = loader.getController();
-        controller.initialize(new ShipFormViewModel(idTerminal, ship));
+        var formFxml = appResources.getShipFormFxml();
+        var form = FXMLLoaders.<ShipFormController>load(formFxml);
+        form.controller().initialize(new ShipFormViewModel(idTerminal, ship));
 
         var stage = new Stage();
 
         stage.initModality(APPLICATION_MODAL);
         stage.initOwner(addShipBtn.getScene().getWindow());
         stage.setTitle("Update ship - Terminal %d".formatted(idTerminal));
-        stage.setScene(scene);
+        stage.setScene(form.scene());
 
         stage.setResizable(false);
         stage.showAndWait();

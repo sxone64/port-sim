@@ -2,15 +2,12 @@ package portsim;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import org.jspecify.annotations.NullMarked;
 import portsim.io.AppLogger;
 import portsim.io.AppResources;
-
-import java.io.IOException;
+import portsim.io.FXMLLoaders;
 
 import static javafx.scene.control.Alert.AlertType.ERROR;
 
@@ -39,15 +36,7 @@ public class Main extends Application {
                         throwable)
         );
 
-        var loader = new FXMLLoader(AppResources.getInstance().getAdminFxml());
-
-        Scene scene;
-        try {
-            scene = new Scene(loader.load());
-        } catch (IOException e) {
-            logger.severe("Failed to load the FXML resource", e);
-            return;
-        }
+        var scene = FXMLLoaders.loadScene(AppResources.getInstance().getAdminFxml());
 
         stage.setScene(scene);
         stage.show();
