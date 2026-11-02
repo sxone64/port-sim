@@ -24,7 +24,8 @@ public final class TerminalNavigator {
     // Holds info about original lane returning positions for ships that are overtaking
     private final Map<Ship, Position> pendingReturn = new ConcurrentHashMap<>();
 
-    private final Map<Ship, Position> pendingUndock = new ConcurrentHashMap<>();
+    // If a ship on the right wants to move in front, other ships need to let it proceed
+    private final Map<Ship, Position> pendingRightHandMove = new ConcurrentHashMap<>();
 
     private final SimulationEngine engine = SimulationEngine.getInstance();
 
@@ -55,13 +56,13 @@ public final class TerminalNavigator {
         if (terminal.isOccupied(to))
             return false;
 
-        if (pendingUndock.containsValue(to)) {
-            var undockPosition = pendingUndock.get(ship);
+        if (pendingRightHandMove.containsValue(to)) {
+            var pos = pendingRightHandMove.get(ship);
 
-            if (!undockPosition.equals(to))
+            if (!to.equals(pos))
                 return false;
 
-            pendingUndock.remove(ship);
+            pendingRightHandMove.remove(ship);
         }
 
         terminal.moveShip(ship, to);
@@ -130,8 +131,15 @@ public final class TerminalNavigator {
         if (step instanceof Step.Move(Position position)) {
             var currentType = terminal.getCellType(current);
 
-            if (goal == Goal.UNDOCK_AND_EXIT && (currentType == DOCK_UP || currentType == DOCK_DOWN))
-                pendingUndock.put(ship, position);
+            // Ship is undocking
+            if (goal == Goal.UNDOCK_AND_EXIT
+                    && (currentType == DOCK_UP || currentType == DOCK_DOWN))
+                pendingRightHandMove.put(ship, position);
+
+            // Ship is leaving the channel
+            else if (position.equals(new Position(1, 1))
+                    && current.equals(new Position(1, 2)))
+                pendingRightHandMove.put(ship, position);
 
             // We find out here if the ship needs to overtake or not
             else if (!pendingReturn.containsKey(ship)) {
