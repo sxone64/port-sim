@@ -4,6 +4,7 @@ import org.jspecify.annotations.NullMarked;
 import portsim.model.Position;
 import portsim.model.Terminal;
 import portsim.model.ship.Ship;
+import portsim.service.IncidentService;
 import portsim.simulation.SimulationEngine;
 import portsim.simulation.thread.ShipThread.Goal;
 import portsim.simulation.thread.StepPhaser;
@@ -67,11 +68,20 @@ public final class TerminalNavigator {
 
         terminal.moveShip(ship, to);
 
+        var incidentOptional = IncidentService.getInstance()
+                .checkIncident(ship, terminal, from, to);
+
         if (isReturnMove)
             pendingReturn.remove(ship);
 
         engine.notifyListeners(phaser, (listener, ack) ->
                 listener.onShipMoved(ship, from, to, terminal.getIdTerminal(), ack)
+        );
+
+        incidentOptional.ifPresent(incident ->
+                engine.notifyListeners(phaser, (listener, ack) ->
+                        listener.onIncident(incident, ack)
+                )
         );
 
         return true;

@@ -26,6 +26,11 @@ public interface SimulationListener {
         ack.run();
     }
 
+    // Stop traffic inside the terminal and start nearest state ships with the goal to investigate the incident
+    default void onIncident(Incident incident, Runnable ack) {
+        ack.run();
+    }
+
     default void onShipThreadFinished(Ship ship, Goal goal) {}
     default void onSimulationFinished() {}
 }
