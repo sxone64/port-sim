@@ -1,15 +1,17 @@
 package portsim.ui.viewmodel;
 
 import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.*;
+import javafx.beans.value.ObservableDoubleValue;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import portsim.io.AppLogger;
 import portsim.model.Port;
 import portsim.model.Position;
 import portsim.model.ship.Ship;
+import portsim.model.ship.state.StateShip;
 import portsim.service.PortService;
 import portsim.simulation.SimulationEngine;
 import portsim.simulation.event.SimulationListener;
@@ -19,9 +21,25 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Consumer;
 
+import static portsim.simulation.thread.ShipThread.Goal.ENTER_AND_DOCK;
+
 @NullMarked
 public final class SimulationViewModel implements SimulationListener {
     private final StringProperty eventMessageProperty = new SimpleStringProperty("");
+
+    private final IntegerProperty totalThreadsProperty = new SimpleIntegerProperty(0);
+    private final IntegerProperty finishedThreadsProperty = new SimpleIntegerProperty(0);
+
+    private final DoubleBinding progressBinding = Bindings.createDoubleBinding(
+            () -> {
+                var total = totalThreadsProperty.get();
+                return total == 0 ? 0.0 : Math.min(1.0, (double) finishedThreadsProperty.get() / total);
+            },
+            totalThreadsProperty, finishedThreadsProperty
+    );
+
+    private final IntegerProperty shipsEnteredProperty = new SimpleIntegerProperty(0);
+    private final IntegerProperty shipsLeftProperty = new SimpleIntegerProperty(0);
 
     private final Port port;
 
@@ -39,6 +57,18 @@ public final class SimulationViewModel implements SimulationListener {
         return eventMessageProperty;
     }
 
+    public ObservableDoubleValue progressProperty() {
+        return progressBinding;
+    }
+
+    public ReadOnlyIntegerProperty shipsEnteredProperty() {
+        return shipsEnteredProperty;
+    }
+
+    public ReadOnlyIntegerProperty shipsLeftProperty() {
+        return shipsLeftProperty;
+    }
+
     public Port getPort() {
         return port;
     }
@@ -48,7 +78,8 @@ public final class SimulationViewModel implements SimulationListener {
     }
 
     public void startSimulation(int minShipsPerTerminal) {
-        simulationEngine.start(minShipsPerTerminal);
+        var exiting = simulationEngine.start(minShipsPerTerminal);
+        totalThreadsProperty.set(exiting);
     }
 
     @Override
@@ -113,8 +144,19 @@ public final class SimulationViewModel implements SimulationListener {
                     .formatted(getLocalTimeString(), ship.getImo());
         };
 
-        dispatch(message, null, ui ->
-                ui.onShipThreadFinished(ship, goal)
+        dispatch(message, null,
+                () -> {
+                    // Only commercial ship threads are tracked
+                    if (!(ship instanceof StateShip)) {
+                        finishedThreadsProperty.set(finishedThreadsProperty.get() + 1);
+
+                        if (goal == ENTER_AND_DOCK)
+                            shipsEnteredProperty.set(shipsEnteredProperty.get() + 1);
+                        else
+                            shipsLeftProperty.set(shipsLeftProperty.get() + 1);
+                    }
+                },
+                ui -> ui.onShipThreadFinished(ship, goal)
         );
     }
 
@@ -130,8 +172,17 @@ public final class SimulationViewModel implements SimulationListener {
     }
 
     private void dispatch(String message, @Nullable Runnable ack, @Nullable Consumer<SimulationListener> event) {
+        dispatch(message, ack, null, event);
+    }
+
+    // This way we avoid having multiple Platform.runLater calls for the same event
+    private void dispatch(String message, @Nullable Runnable ack,
+                          @Nullable Runnable stateUpdate, @Nullable Consumer<SimulationListener> event) {
         try {
             Platform.runLater(() -> {
+                if (stateUpdate != null)
+                    stateUpdate.run();
+
                 eventMessageProperty.set(message);
 
                 // Forward the event to registered UI listener if it's present

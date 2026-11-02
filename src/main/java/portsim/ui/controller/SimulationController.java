@@ -1,6 +1,8 @@
 package portsim.ui.controller;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import org.jspecify.annotations.NullMarked;
 import portsim.model.Position;
 import portsim.model.ship.Ship;
@@ -13,6 +15,12 @@ import portsim.ui.viewmodel.SimulationViewModel;
 @NullMarked
 public final class SimulationController implements SimulationListener {
     @FXML private SimulationPane simulationPane;
+
+    @FXML private ProgressBar progressBar;
+
+    @FXML private Label shipsEnteredLabel;
+    @FXML private Label shipsLeftLabel;
+
     @FXML private EventsLogNode eventsLogNode;
 
     @SuppressWarnings("NotNullFieldNotInitialized")
@@ -34,6 +42,16 @@ public final class SimulationController implements SimulationListener {
             if (!message.isEmpty())
                 eventsLogNode.addMessage(message);
         });
+
+        progressBar.progressProperty().bind(viewModel.progressProperty());
+
+        shipsEnteredLabel.textProperty().bind(
+                viewModel.shipsEnteredProperty().asString()
+        );
+
+        shipsLeftLabel.textProperty().bind(
+                viewModel.shipsLeftProperty().asString()
+        );
     }
 
     @Override

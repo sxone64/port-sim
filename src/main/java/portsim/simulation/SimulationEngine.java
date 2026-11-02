@@ -62,11 +62,13 @@ public final class SimulationEngine {
         startEntering(ship, portService.getTerminals().getFirst().getIdTerminal());
     }
 
-    public void start(int minShipsPerTerminal) {
+    // Returns the initial number of selected ships for exiting
+    public int start(int minShipsPerTerminal) {
         initSessions();
         placeAdditionalShips(minShipsPerTerminal);
 
         var exiting = selectExitingShips();
+        var count = pendingExits.get();
 
         running = true;
 
@@ -76,6 +78,8 @@ public final class SimulationEngine {
             for (var ship : entry.getValue())
                 startExiting(ship, idTerminal);
         }
+
+        return count;
     }
 
     public Optional<TerminalSession> getTerminalSession(int idTerminal) {
