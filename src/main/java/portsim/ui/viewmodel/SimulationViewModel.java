@@ -14,6 +14,7 @@ import portsim.model.ship.Ship;
 import portsim.model.ship.state.StateShip;
 import portsim.service.PortService;
 import portsim.simulation.SimulationEngine;
+import portsim.simulation.event.Incident;
 import portsim.simulation.event.SimulationListener;
 import portsim.simulation.thread.ShipThread.Goal;
 
@@ -40,6 +41,7 @@ public final class SimulationViewModel implements SimulationListener {
 
     private final IntegerProperty shipsEnteredProperty = new SimpleIntegerProperty(0);
     private final IntegerProperty shipsLeftProperty = new SimpleIntegerProperty(0);
+    private final IntegerProperty incidentsProperty = new SimpleIntegerProperty(0);
 
     private final IntegerProperty minShipsProperty = new SimpleIntegerProperty();
 
@@ -70,6 +72,10 @@ public final class SimulationViewModel implements SimulationListener {
 
     public ReadOnlyIntegerProperty shipsLeftProperty() {
         return shipsLeftProperty;
+    }
+
+    public ReadOnlyIntegerProperty incidentsProperty() {
+        return incidentsProperty;
     }
 
     public IntegerProperty minShipsProperty() {
@@ -149,6 +155,19 @@ public final class SimulationViewModel implements SimulationListener {
 
         dispatch(message, ack, ui ->
                 ui.onShipMoved(ship, from, to, idTerminal, ack)
+        );
+    }
+
+    @Override
+    public void onIncident(Incident incident, Runnable ack) {
+        var message = "[%s] Incident happened between ship IMO %d and ship IMO %d at position %s in terminal ID %d"
+                .formatted(getLocalTimeString(),
+                        incident.causer().getImo(), incident.participant().getImo(),
+                        incident.pos(), incident.idTerminal());
+
+        dispatch(message, ack,
+                () -> incidentsProperty.set(incidentsProperty.get() + 1),
+                null
         );
     }
 

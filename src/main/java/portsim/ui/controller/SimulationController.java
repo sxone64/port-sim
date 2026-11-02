@@ -21,6 +21,7 @@ public final class SimulationController implements SimulationListener {
 
     @FXML private Label shipsEnteredLabel;
     @FXML private Label shipsLeftLabel;
+    @FXML private Label incidentsLabel;
 
     @FXML private EventsLogNode eventsLogNode;
 
@@ -56,6 +57,10 @@ public final class SimulationController implements SimulationListener {
 
         shipsLeftLabel.textProperty().bind(
                 viewModel.shipsLeftProperty().asString()
+        );
+
+        incidentsLabel.textProperty().bind(
+                viewModel.incidentsProperty().asString()
         );
 
         minShipsSlider.setMax(viewModel.getDocksTerminal());

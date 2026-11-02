@@ -62,7 +62,7 @@
                             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                         </padding>
                         <Label text="Incidents:" />
-                        <Label text="0">
+                        <Label fx:id="incidentsLabel">
                             <font>
                                 <Font size="24.0" />
                             </font>
