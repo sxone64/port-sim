@@ -55,6 +55,10 @@ public final class Terminal implements Serializable {
         return List.copyOf(ships);
     }
 
+    public Optional<Ship> getShip(Position pos) {
+        return Optional.ofNullable(getCell(pos).getOccupant());
+    }
+
     public int getStateShipCount() {
         return (int) ships.stream()
                 .filter(ship -> ship instanceof StateShip)
