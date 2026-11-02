@@ -62,6 +62,11 @@ public final class PortService {
         return terminal.getFreeDocks();
     }
 
+    public int getDocksTerminal() {
+        var numTerminals = getTerminals().size();
+        return getTotalDocks() / numTerminals;
+    }
+
     public Port getPort() {
         return port;
     }

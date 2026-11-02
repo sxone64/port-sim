@@ -41,8 +41,12 @@ public final class SimulationViewModel implements SimulationListener {
     private final IntegerProperty shipsEnteredProperty = new SimpleIntegerProperty(0);
     private final IntegerProperty shipsLeftProperty = new SimpleIntegerProperty(0);
 
-    private final Port port;
+    private final IntegerProperty minShipsProperty = new SimpleIntegerProperty();
 
+    // Indicates if simulation is running or not
+    private final BooleanProperty runningProperty = new SimpleBooleanProperty(false);
+
+    private final PortService portService = PortService.getInstance();
     private final SimulationEngine simulationEngine = SimulationEngine.getInstance();
 
     @Nullable
@@ -50,7 +54,6 @@ public final class SimulationViewModel implements SimulationListener {
 
     public SimulationViewModel() {
         simulationEngine.addListener(this);
-        port = PortService.getInstance().getPort();
     }
 
     public ReadOnlyStringProperty eventMessageProperty() {
@@ -69,17 +72,33 @@ public final class SimulationViewModel implements SimulationListener {
         return shipsLeftProperty;
     }
 
+    public IntegerProperty minShipsProperty() {
+        return minShipsProperty;
+    }
+
+    public ReadOnlyBooleanProperty runningProperty() {
+        return runningProperty;
+    }
+
+    public int getDocksTerminal() {
+        return portService.getDocksTerminal();
+    }
+
     public Port getPort() {
-        return port;
+        return portService.getPort();
     }
 
     public void setUiListener(SimulationListener uiListener) {
         this.uiListener = uiListener;
     }
 
-    public void startSimulation(int minShipsPerTerminal) {
+    public void startSimulation() {
+        var minShipsPerTerminal = minShipsProperty.get();
+
         var exiting = simulationEngine.start(minShipsPerTerminal);
         totalThreadsProperty.set(exiting);
+
+        runningProperty.set(true);
     }
 
     @Override
@@ -163,7 +182,11 @@ public final class SimulationViewModel implements SimulationListener {
     @Override
     public void onSimulationFinished() {
         var message = "[%s] Simulation has finished".formatted(getLocalTimeString());
-        dispatch(message, null, null);
+
+        dispatch(message, null,
+                () -> runningProperty.set(false),
+                null
+        );
     }
 
     private String getLocalTimeString() {

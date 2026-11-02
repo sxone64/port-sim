@@ -1,8 +1,8 @@
 package portsim.ui.controller;
 
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
+import javafx.scene.control.*;
 import org.jspecify.annotations.NullMarked;
 import portsim.model.Position;
 import portsim.model.ship.Ship;
@@ -17,11 +17,16 @@ public final class SimulationController implements SimulationListener {
     @FXML private SimulationPane simulationPane;
 
     @FXML private ProgressBar progressBar;
+    @FXML private Button addShipBtn;
 
     @FXML private Label shipsEnteredLabel;
     @FXML private Label shipsLeftLabel;
 
     @FXML private EventsLogNode eventsLogNode;
+
+    @FXML private Slider minShipsSlider;
+    @FXML private TextField minShipsField;
+    @FXML private Button playBtn;
 
     @SuppressWarnings("NotNullFieldNotInitialized")
     private PortNode portNode;
@@ -52,6 +57,33 @@ public final class SimulationController implements SimulationListener {
         shipsLeftLabel.textProperty().bind(
                 viewModel.shipsLeftProperty().asString()
         );
+
+        minShipsSlider.setMax(viewModel.getDocksTerminal());
+
+        minShipsSlider.valueProperty().bindBidirectional(viewModel.minShipsProperty());
+        minShipsField.textProperty().bind(viewModel.minShipsProperty().asString());
+
+        addShipBtn.disableProperty().bind(Bindings.createBooleanBinding(
+                () -> {
+                    var running = viewModel.runningProperty().get();
+                    return !running;
+                },
+                viewModel.runningProperty())
+        );
+
+        minShipsSlider.disableProperty().bind(viewModel.runningProperty());
+        minShipsField.disableProperty().bind(viewModel.runningProperty());
+
+        playBtn.disableProperty().bind(Bindings.createBooleanBinding(
+                () -> {
+                    var running = viewModel.runningProperty().get();
+                    if (running) return true;
+
+                    var minShips = viewModel.minShipsProperty().get();
+                    return minShips == 0;
+                },
+                viewModel.runningProperty(), viewModel.minShipsProperty()
+        ));
     }
 
     @Override
@@ -82,5 +114,10 @@ public final class SimulationController implements SimulationListener {
     public void onShipMoved(Ship ship, Position from, Position to, int idTerminal, Runnable ack) {
         portNode.getTerminalNode(idTerminal)
                 .ifPresentOrElse(node -> node.moveShip(ship, from, to, ack), ack);
+    }
+
+    @FXML
+    private void onPlayAction() {
+        viewModel.startSimulation();
     }
 }
