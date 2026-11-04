@@ -4,6 +4,7 @@ import org.jspecify.annotations.NullMarked;
 import portsim.model.Position;
 import portsim.model.Terminal;
 import portsim.model.ship.Ship;
+import portsim.model.ship.state.StateShip;
 import portsim.service.IncidentService;
 import portsim.simulation.SimulationEngine;
 import portsim.simulation.thread.ShipThread.Goal;
@@ -206,12 +207,35 @@ public final class TerminalNavigator {
     }
 
     /*
-        Determines if the ship should overtake based on its current and desired positions.
+        Determines if the ship should overtake.
+
+        Commercial ships can only overtake other commercial ships.
+        State ships can overtake commercial ships and state ships of lower priority.
+
         If desired position isn't occupied, no overtaking is needed
      */
     private Optional<Position> nextOvertakeStep(Ship ship, Position from, Position to) {
         if (!terminal.isOccupied(to))
             return Optional.empty();
+
+        // Ship in front occuping the destination position
+        var overtakeShipOptional = terminal.getShip(to);
+
+        if (overtakeShipOptional.isPresent()) {
+            if (overtakeShipOptional.get() instanceof StateShip overtakeStateShip) {
+                // Overtaking ship is also a state ship
+                if (ship instanceof StateShip stateShip) {
+                    var overtakeStateShipPriority = overtakeStateShip.getPriority();
+                    var stateShipPriority = stateShip.getPriority();
+
+                    // Ships of the same priority can overtake each other
+                    if (overtakeStateShipPriority.compareTo(stateShipPriority) < 0)
+                        return Optional.empty();
+                }
+                // Commercial ship cannot overtake the state ship
+                else return Optional.empty();
+            }
+        }
 
         var overtake = computeOvertakePos(from, to);
 
