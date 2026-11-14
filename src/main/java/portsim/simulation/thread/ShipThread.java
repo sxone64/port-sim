@@ -14,7 +14,7 @@ import static portsim.simulation.thread.ShipThread.Goal.ENTER_AND_DOCK;
 
 @NullMarked
 public final class ShipThread implements Runnable {
-    private static final int BACKOFF_MILLIS = 100;
+    private static final int WAIT_MILLIS = 100;
     private static final Duration ACK_TIMEOUT = Duration.ofSeconds(10);
 
     private final Ship ship;
@@ -67,7 +67,6 @@ public final class ShipThread implements Runnable {
         }
     }
 
-    @SuppressWarnings("BusyWait")
     private void handleEntry() throws InterruptedException {
         var navigator = session.getNavigator();
 
@@ -76,11 +75,13 @@ public final class ShipThread implements Runnable {
             var entered = session.lockedGet(() -> navigator.tryEnter(ship, current, phaser));
 
             if (entered) {
+                session.signalAll();
+
                 await(phaser);
                 break;
             }
 
-            Thread.sleep(BACKOFF_MILLIS);
+            session.waitSession(WAIT_MILLIS);
         }
     }
 
@@ -91,10 +92,12 @@ public final class ShipThread implements Runnable {
         var moveSuccess = session.lockedGet(() -> navigator.tryAdvance(ship, current, destination, phaser));
 
         if (moveSuccess) {
+            session.signalAll();
+
             current = destination;
             await(phaser);
         }
-        else Thread.sleep(BACKOFF_MILLIS);
+        else session.waitSession(WAIT_MILLIS);
     }
 
     // Returns false if terminal transfer shouldn't be attempted again
@@ -107,6 +110,8 @@ public final class ShipThread implements Runnable {
                 navigator.tryTransfer(ship, current, direction, arrival, phaser));
 
         if (transferSuccess) {
+            session.signalAll();
+
             await(phaser);
 
             var nextIdTerminal = idTerminalFrom + direction;
@@ -119,7 +124,7 @@ public final class ShipThread implements Runnable {
             session = nextSession.get();
             current = arrival;
         }
-        else Thread.sleep(BACKOFF_MILLIS);
+        else session.waitSession(WAIT_MILLIS);
 
         return true;
     }
