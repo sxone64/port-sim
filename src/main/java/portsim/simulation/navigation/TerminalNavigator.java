@@ -20,7 +20,7 @@ import static portsim.model.Cell.Type.*;
 public final class TerminalNavigator {
     private final Terminal terminal;
 
-    // These constants define the channel bounds that are used to determine if overtaking is possible or not
+    // These constants define the bounds used to determine if overtaking is possible or not
     private final int MIN_RETURN_COLUMN, MAX_RETURN_COLUMN;
 
     // Holds info about original lane returning positions for ships that are overtaking
@@ -52,8 +52,8 @@ public final class TerminalNavigator {
     }
 
     public boolean tryAdvance(Ship ship, Position from, Position to, StepPhaser phaser) {
-        var returnPosition = pendingReturn.get(ship);
-        var isReturnMove = to.equals(returnPosition);
+        var returnPos = pendingReturn.get(ship);
+        var isReturnMove = to.equals(returnPos);
 
         if (terminal.isOccupied(to))
             return false;
@@ -69,7 +69,7 @@ public final class TerminalNavigator {
 
         terminal.moveShip(ship, to);
 
-        var incidentOptional = IncidentService.getInstance()
+        var incidentOpt = IncidentService.getInstance()
                 .checkIncident(ship, terminal, from, to);
 
         if (isReturnMove)
@@ -79,7 +79,7 @@ public final class TerminalNavigator {
                 listener.onShipMoved(ship, from, to, terminal.getIdTerminal(), ack)
         );
 
-        incidentOptional.ifPresent(incident ->
+        incidentOpt.ifPresent(incident ->
                 engine.notifyListeners(phaser, (listener, ack) ->
                         listener.onIncident(incident, ack)
                 )
@@ -88,29 +88,29 @@ public final class TerminalNavigator {
         return true;
     }
 
-    public boolean tryLeave(Ship ship, Position position, StepPhaser phaser) {
-        if (!position.equals(new Position(0, 1)) && !position.equals(new Position(3, 0)))
+    public boolean tryLeave(Ship ship, Position pos, StepPhaser phaser) {
+        if (!pos.equals(new Position(0, 1)) && !pos.equals(new Position(3, 0)))
             return false;
 
         terminal.removeShip(ship);
 
         engine.notifyListeners(phaser, (listener, ack) ->
-                listener.onShipLeft(ship, position, terminal.getIdTerminal(), ack)
+                listener.onShipLeft(ship, pos, terminal.getIdTerminal(), ack)
         );
 
         return true;
     }
 
-    public boolean tryTransfer(Ship ship, Position currentPos,
+    public boolean tryTransfer(Ship ship, Position current,
                                int direction, Position arrival, StepPhaser phaser) {
         var nextIdTerminal = terminal.getIdTerminal() + direction;
-        var nextSessionOptional = engine.getTerminalSession(nextIdTerminal);
+        var nextSessionOpt = engine.getTerminalSession(nextIdTerminal);
 
         // If no next terminal exists, attempt to leave the port entirely
-        if (nextSessionOptional.isEmpty())
-            return tryLeave(ship, currentPos, phaser);
+        if (nextSessionOpt.isEmpty())
+            return tryLeave(ship, current, phaser);
 
-        var nextSession = nextSessionOptional.get();
+        var nextSession = nextSessionOpt.get();
         var nextTerminal = nextSession.getTerminal();
 
         // Ensure the arrival cell in the next terminal is free
@@ -122,7 +122,7 @@ public final class TerminalNavigator {
 
         engine.notifyListeners(phaser, (listener, ack) ->
                 listener.onShipTransferred(
-                        ship, terminal.getIdTerminal(), currentPos, nextIdTerminal, arrival, ack)
+                        ship, terminal.getIdTerminal(), current, nextIdTerminal, arrival, ack)
         );
 
         return true;
@@ -133,6 +133,10 @@ public final class TerminalNavigator {
 
         if (returnStep.isPresent())
             return returnStep.get();
+
+        var stepOpt = nextOvertakeStep(ship, current);
+        if (stepOpt.isPresent())
+            return stepOpt.get();
 
         var step = switch (goal) {
             case ENTER_AND_DOCK -> nextStepEntering(current);
@@ -171,39 +175,17 @@ public final class TerminalNavigator {
         if (returnPos == null)
             return Optional.empty();
 
-        var currentType = terminal.getCellType(current);
-        var isAdjacentLeft = returnPos.column() == current.column() - 1;
-        var isAdjacentRight = returnPos.column() == current.column() + 1;
+        var delta = returnPos.column() - current.column();
 
         /*
             If the return position is adjacent column-wise to the current position
             and the return position isn't occupied, then next step is to finish the overtaking
             by moving to the return position
          */
-        if ((isAdjacentLeft || isAdjacentRight) && !terminal.isOccupied(returnPos))
+        if (Math.abs(delta) == 1 && !terminal.isOccupied(returnPos))
             return Optional.of(new Step.Move(returnPos));
 
-        int direction;
-        if (currentType == CHANNEL_LEFT && isAdjacentRight && current.column() < MAX_RETURN_COLUMN)
-            direction = 1;
-        else if (currentType == CHANNEL_RIGHT && isAdjacentLeft && current.column() > MIN_RETURN_COLUMN)
-            direction = -1;
-
-        /*
-            Occupied return position is further down the original lane, or we've hit the channel boundary.
-            Ship rotates in overtaking lane and continues moving normally alongside that lane
-         */
-        else return Optional.empty();
-
-        var position = new Position(current.row(), current.column() + direction);
-
-        /*
-            Because the ship is going to move by one cell on the overtake lane,
-            we need to update the return position accordingly
-         */
-        updatePendingReturn(ship, current, returnPos);
-
-        return Optional.of(new Step.Move(position));
+        return Optional.empty();
     }
 
     /*
@@ -219,10 +201,16 @@ public final class TerminalNavigator {
             return Optional.empty();
 
         // Ship in front occuping the destination position
-        var overtakeShipOptional = terminal.getShip(to);
+        var overtakeShipOpt = terminal.getShip(to);
 
-        if (overtakeShipOptional.isPresent()) {
-            if (overtakeShipOptional.get() instanceof StateShip overtakeStateShip) {
+        if (overtakeShipOpt.isPresent()) {
+            var overtakeShip = overtakeShipOpt.get();
+
+            // Do not overtake a ship that's already overtaking
+            if (pendingReturn.containsKey(overtakeShip))
+                return Optional.empty();
+
+            if (overtakeShipOpt.get() instanceof StateShip overtakeStateShip) {
                 // Overtaking ship is also a state ship
                 if (ship instanceof StateShip stateShip) {
                     var overtakeStateShipPriority = overtakeStateShip.getPriority();
@@ -252,14 +240,47 @@ public final class TerminalNavigator {
         return overtake;
     }
 
-    private void updatePendingReturn(Ship ship, Position current, Position oldReturn) {
-        var newReturn = shiftReturnPos(current, oldReturn);
+    /*
+        Used to get the next step for an overtaking ship in the overtake lane.
+        Return position is updated after the next step is calculated
+     */
+    private Optional<Step> nextOvertakeStep(Ship ship, Position current) {
+        var returnPos = pendingReturn.get(ship);
+
+        if (returnPos == null)
+            return Optional.empty();
+
+        var delta = returnPos.column() - current.column();
+        var currentType = terminal.getCellType(current);
+
+        var possible = switch (currentType) {
+            case CHANNEL_LEFT -> delta == 1 && current.column() < MAX_RETURN_COLUMN;
+            case CHANNEL_RIGHT -> delta == 1 && current.column() > MIN_RETURN_COLUMN;
+            default -> false;
+        };
+
+        if (!possible)
+            return Optional.empty();
+
+        var position = new Position(current.row(), current.column() + delta);
+
+        /*
+            Because the ship is going to move by one cell on the overtake lane,
+            we need to update the return position accordingly
+         */
+        updatePendingReturn(ship, current, returnPos);
+
+        return Optional.of(new Step.Move(position));
+    }
+
+    private void updatePendingReturn(Ship ship, Position current, Position oldReturnPos) {
+        var newReturn = shiftReturnPos(current, oldReturnPos);
 
         if (newReturn.isPresent())
             pendingReturn.put(ship, newReturn.get());
 
         else {
-            var fallback = computeFallbackPos(current, oldReturn);
+            var fallback = computeFallbackPos(current, oldReturnPos);
 
             if (fallback.isPresent())
                 pendingReturn.put(ship, fallback.get());
@@ -273,25 +294,24 @@ public final class TerminalNavigator {
         Return a new return position that retains the previous current/return position gap
         or nothing if the shift goes out of channel bounds
      */
-    private Optional<Position> shiftReturnPos(Position current, Position oldReturn) {
-        var delta = oldReturn.column() - current.column();
-        var newReturnColumn = oldReturn.column() + delta;
+    private Optional<Position> shiftReturnPos(Position current, Position oldReturnPos) {
+        var delta = oldReturnPos.column() - current.column();
+        var newReturnColumn = oldReturnPos.column() + delta;
 
         if (newReturnColumn < MIN_RETURN_COLUMN || newReturnColumn > MAX_RETURN_COLUMN)
             return Optional.empty();
 
-        return Optional.of(new Position(oldReturn.row(), newReturnColumn));
+        return Optional.of(new Position(oldReturnPos.row(), newReturnColumn));
     }
 
     /*
         Return a new return position to which an overtaking ship has to backtrack because overtaking isn't possible
         or nothing if there's not a single free cell in channel bounds to backtrack to
      */
-    private Optional<Position> computeFallbackPos(Position current, Position oldReturn) {
-        var targetRow = oldReturn.row();
-        var currentLaneType = terminal.getCellType(current);
+    private Optional<Position> computeFallbackPos(Position current, Position oldReturnPos) {
+        var targetRow = oldReturnPos.row();
 
-        var delta = (currentLaneType == CHANNEL_RIGHT) ? 1 : -1;
+        var delta = current.column() - oldReturnPos.column();
         var targetColumn = current.column() + delta;
 
         while (targetColumn >= MIN_RETURN_COLUMN && targetColumn <= MAX_RETURN_COLUMN) {
@@ -435,7 +455,6 @@ public final class TerminalNavigator {
                     ? new Step.Move(new Position(1, current.column() - 1))
                     : new Step.Move(new Position(0, 1));
 
-        // TODO: Not sure if this is ever returned based on how leaving the port is detected
         return new Step.Completed();
     }
 }
