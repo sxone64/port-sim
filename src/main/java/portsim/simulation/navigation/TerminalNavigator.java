@@ -18,6 +18,9 @@ import static portsim.model.Cell.Type.*;
 
 @NullMarked
 public final class TerminalNavigator {
+    // Speed percentage cutoff for ship overtaking
+    private static final double OVERTAKE_SPEED_CUTOFF_PERCENT = 0.5;
+
     private final Terminal terminal;
 
     // These constants define the bounds used to determine if overtaking is possible or not
@@ -134,9 +137,9 @@ public final class TerminalNavigator {
         if (returnStep.isPresent())
             return returnStep.get();
 
-        var stepOpt = nextOvertakeStep(ship, current);
-        if (stepOpt.isPresent())
-            return stepOpt.get();
+        var overtakeOpt = nextOvertakeStep(ship, current);
+        if (overtakeOpt.isPresent())
+            return overtakeOpt.get();
 
         var step = switch (goal) {
             case ENTER_AND_DOCK -> nextStepEntering(current);
@@ -210,6 +213,10 @@ public final class TerminalNavigator {
             if (pendingReturn.containsKey(overtakeShip))
                 return Optional.empty();
 
+            // If the overtaking ship is less than OVERTAKE_SPEED_CUTOFF_PERCENT faster, don't overtake
+            if ((double) overtakeShip.getSpeed() / ship.getSpeed() >= (1.0 - OVERTAKE_SPEED_CUTOFF_PERCENT))
+                return Optional.empty();
+
             if (overtakeShipOpt.get() instanceof StateShip overtakeStateShip) {
                 // Overtaking ship is also a state ship
                 if (ship instanceof StateShip stateShip) {
@@ -230,12 +237,12 @@ public final class TerminalNavigator {
         if (overtake.isEmpty() || terminal.isOccupied(overtake.get()))
             return Optional.empty();
 
-        var returnPos = computeReturnPos(from, to);
+        var returnPosOpt = computeReturnPos(from, to);
 
-        if (returnPos.isEmpty())
-            returnPos = computeFallbackPos(overtake.get(), from);
+        if (returnPosOpt.isEmpty())
+            returnPosOpt = computeFallbackPos(overtake.get(), from);
 
-        returnPos.ifPresent(position -> pendingReturn.put(ship, position));
+        returnPosOpt.ifPresent(position -> pendingReturn.put(ship, position));
 
         return overtake;
     }
