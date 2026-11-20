@@ -4,6 +4,7 @@ import org.jspecify.annotations.NullMarked;
 import portsim.model.Position;
 import portsim.model.Terminal;
 import portsim.model.ship.Ship;
+import portsim.model.ship.state.StateShip;
 import portsim.simulation.event.Incident;
 
 import java.time.LocalDateTime;
@@ -25,26 +26,32 @@ public final class IncidentService {
 
     /*
         Incidents happen when a moving ship is passing by another ship in the channel
-        while overtaking or simply moving in its lane
+        while overtaking or simply moving in its lane.
+
+        State ships cannot be part of an incident
      */
     public Optional<Incident> checkIncident(Ship causer, Terminal terminal, Position from, Position to) {
+        if (causer instanceof StateShip)
+            return Optional.empty();
+
         var neighbor = findOccupiedNeighbor(terminal, from, to);
 
         if (neighbor.isEmpty())
             return Optional.empty();
 
-        if (ThreadLocalRandom.current().nextDouble() < INCIDENT_PROBABILITY) {
-            var participant = terminal.getShip(neighbor.get());
+        var participant = terminal.getShip(neighbor.get());
 
-            if (participant.isPresent())
-                return Optional.of(
-                        new Incident(
-                                causer, participant.get(), neighbor.get(),
-                                terminal.getIdTerminal(), LocalDateTime.now())
-                );
-        }
+        if (participant.isEmpty() || participant.get() instanceof StateShip)
+            return Optional.empty();
 
-        return Optional.empty();
+        if (ThreadLocalRandom.current().nextDouble() >= INCIDENT_PROBABILITY)
+            return Optional.empty();
+
+        return Optional.of(
+                new Incident(
+                        causer, participant.get(), neighbor.get(),
+                        terminal.getIdTerminal(), LocalDateTime.now())
+        );
     }
 
     private Optional<Position> findOccupiedNeighbor(Terminal terminal, Position from, Position to) {
